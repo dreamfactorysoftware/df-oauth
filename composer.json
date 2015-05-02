@@ -27,7 +27,8 @@
     "source": "https://github.com/dreamfactorysoftware/rave"
   },
   "require": {
-    "dreamfactory/rave": "dev-develop as dev-master"
+    "dreamfactory/rave": "dev-develop as dev-master",
+    "laravel/socialite": "~2.0"
   },
   "autoload":{
     "psr-4": {
