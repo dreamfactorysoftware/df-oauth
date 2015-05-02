@@ -18,29 +18,15 @@
  * limitations under the License.
  */
 
-namespace DreamFactory\DSP\OAuth\Services;
+namespace DreamFactory\DSP\OAuth\Models;
 
-use DreamFactory\Rave\Resources\BaseRestResource;
-use DreamFactory\Library\Utility\Enums\Verbs;
-use DreamFactory\Library\Utility\ArrayUtils;
+use DreamFactory\Rave\Models\BaseServiceConfigModel;
 
-abstract class BaseOAuthService extends BaseRestResource
+class OAuthConfig extends BaseServiceConfigModel
 {
-    protected $driver;
+    protected $table = 'oauth_config';
 
-    /**
-     * @param array $settings
-     */
-    public function __construct( $settings = [ ] )
-    {
-        $verbAliases = [
-            Verbs::PUT   => Verbs::POST,
-            Verbs::MERGE => Verbs::PATCH
-        ];
-        ArrayUtils::set( $settings, "verbAliases", $verbAliases );
-        parent::__construct( $settings );
-        $this->setDriver( ArrayUtils::get( $settings, 'config' ) );
-    }
+    protected $fillable = ['service_id', 'client_id', 'client_secret'];
 
-    abstract protected function setDriver( $config );
+    protected $encrypted = ['client_secret'];
 }

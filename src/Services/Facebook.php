@@ -21,7 +21,37 @@
 namespace DreamFactory\DSP\OAuth\Services;
 
 
+use DreamFactory\DSP\OAuth\Components\FacebookProvider;
+use DreamFactory\Library\Utility\ArrayUtils;
+use Illuminate\Http\Request;
+use DreamFactory\Rave\Utility\ResponseFactory;
+use DreamFactory\Rave\Contracts\ServiceResponseInterface;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+
 class Facebook extends BaseOAuthService
 {
+    protected function setDriver($config)
+    {
+        /** @var Request $request */
+        $request = \Request::instance();
+        $clientId = ArrayUtils::get($config, 'client_id');
+        $clientSecret = ArrayUtils::get($config, 'client_secret');
+        $redirectUrl = 'http://rave.local/fbcallback';
 
+        $this->driver = new FacebookProvider($request, $clientId, $clientSecret, $redirectUrl);
+    }
+
+    protected function handlePOST()
+    {
+        if('session' === $this->resource)
+        {
+            /** @var RedirectResponse $response */
+            $response = $this->driver->redirect();
+            $url = $response->getTargetUrl();
+
+            $this->response = ['response' => ['url' => $url]];
+
+            return ResponseFactory::create( $this->response, $this->outputFormat, ServiceResponseInterface::HTTP_OK );
+        }
+    }
 }

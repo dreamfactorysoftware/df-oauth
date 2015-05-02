@@ -18,29 +18,9 @@
  * limitations under the License.
  */
 
-namespace DreamFactory\DSP\OAuth\Services;
+namespace DreamFactory\DSP\OAuth\Components;
 
-use DreamFactory\Rave\Resources\BaseRestResource;
-use DreamFactory\Library\Utility\Enums\Verbs;
-use DreamFactory\Library\Utility\ArrayUtils;
-
-abstract class BaseOAuthService extends BaseRestResource
+class FacebookProvider extends \Laravel\Socialite\Two\FacebookProvider
 {
-    protected $driver;
 
-    /**
-     * @param array $settings
-     */
-    public function __construct( $settings = [ ] )
-    {
-        $verbAliases = [
-            Verbs::PUT   => Verbs::POST,
-            Verbs::MERGE => Verbs::PATCH
-        ];
-        ArrayUtils::set( $settings, "verbAliases", $verbAliases );
-        parent::__construct( $settings );
-        $this->setDriver( ArrayUtils::get( $settings, 'config' ) );
-    }
-
-    abstract protected function setDriver( $config );
 }

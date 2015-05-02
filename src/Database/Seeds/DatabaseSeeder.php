@@ -21,6 +21,7 @@
 namespace DreamFactory\DSP\OAuth\Database\Seeds;
 
 use Illuminate\Database\Seeder;
+use DreamFactory\Rave\Models\ServiceType;
 
 class DatabaseSeeder extends Seeder
 {
@@ -48,7 +49,7 @@ class DatabaseSeeder extends Seeder
             // Add the service type
             ServiceType::create(
                 [
-                    'name'           => 'oauth_facebook',
+                    'name'           => 'oauth_twitter',
                     'class_name'     => "DreamFactory\\DSP\\OAuth\\Services\\Twitter",
                     'config_handler' => "DreamFactory\\DSP\\OAuth\\Models\\OAuthConfig",
                     'label'          => 'Twitter OAuth',
