@@ -1,0 +1,37 @@
+{
+  "name": "dreamfactory/dsp-oauth",
+  "description": "OAuth support for DreamFactory DSP 2.0",
+  "minimum-stability": "dev",
+  "keywords": [
+    "dreamfactory",
+    "dsp",
+    "rave",
+    "oauth"
+  ],
+  "homepage": "https://www.dreamfactory.com/",
+  "license": "Apache-2.0",
+  "authors": [
+    {
+      "name": "Arif Islam",
+      "email": "arifislam@dreamfactory.com"
+    },
+    {
+      "name": "Lee Hicks",
+      "email": "leehicks@dreamfactory.com"
+    }
+  ],
+  "support": {
+    "email": "support@dreamfactory.com",
+    "issues": "https://github.com/dreamfactorysoftware/rave/issues",
+    "wiki": "https://github.com/dreamfactorysoftware/rave/wiki",
+    "source": "https://github.com/dreamfactorysoftware/rave"
+  },
+  "require": {
+    "dreamfactory/rave": "dev-develop as dev-master"
+  },
+  "autoload":{
+    "psr-4": {
+      "DreamFactory\\DSP\\OAuth\\":"src/"
+    }
+  }
+}
