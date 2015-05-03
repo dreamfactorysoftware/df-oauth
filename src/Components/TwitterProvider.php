@@ -18,26 +18,27 @@
  * limitations under the License.
  */
 
-namespace DreamFactory\DSP\OAuth\Services;
+namespace DreamFactory\DSP\OAuth\Components;
 
-use DreamFactory\Library\Utility\ArrayUtils;
-use DreamFactory\DSP\OAuth\Components\TwitterProvider;
+use Illuminate\Http\Request;
+use League\OAuth1\Client\Server\Twitter as TwitterServer;
 
-class Twitter extends BaseOAuthService
+class TwitterProvider extends \Laravel\Socialite\One\TwitterProvider
 {
-    const PROVIDER_NAME = 'twitter';
-    
-    protected function setDriver($config)
+    public function __construct($clientId, $clientSecret, $redirectPath)
     {
-        $clientId = ArrayUtils::get($config, 'client_id');
-        $clientSecret = ArrayUtils::get($config, 'client_secret');
-        $redirectPath = self::CALLBACK_PATH.'?service='.$this->name;
+        /** @var Request $request */
+        $request = \Request::instance();
 
-        $this->driver = new TwitterProvider($clientId, $clientSecret, $redirectPath);
-    }
+        $host = $request->getHost();
+        $redirectUrl = 'http://'.$host.'/'.$redirectPath;
 
-    public function getProviderName()
-    {
-        return self::PROVIDER_NAME;
+        $serverConfig = [
+            'identifier' => $clientId,
+            'secret' => $clientSecret,
+            'callback_uri' => $redirectUrl
+        ];
+
+        parent::__construct($request, new TwitterServer($serverConfig));
     }
 }

@@ -30,6 +30,8 @@ class UpdateUserTableForOauthSupport extends Migration
             {
                 $t->integer( 'service_id' )->unsigned()->primary();
                 $t->foreign( 'service_id' )->references( 'id' )->on( 'service' )->onDelete( 'cascade' );
+                $t->integer('default_role')->unsigned()->index();
+                $t->foreign('default_role')->references('id')->on('role')->onDelete('restrict');
                 $t->string( 'client_id' );
                 $t->longText( 'client_secret' );
             }

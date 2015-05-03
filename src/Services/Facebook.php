@@ -30,28 +30,19 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 
 class Facebook extends BaseOAuthService
 {
+    const PROVIDER_NAME = 'facebook';
+
     protected function setDriver($config)
     {
-        /** @var Request $request */
-        $request = \Request::instance();
         $clientId = ArrayUtils::get($config, 'client_id');
         $clientSecret = ArrayUtils::get($config, 'client_secret');
-        $redirectUrl = 'http://rave.local/fbcallback';
+        $redirectPath = self::CALLBACK_PATH.'?service='.$this->name;
 
-        $this->driver = new FacebookProvider($request, $clientId, $clientSecret, $redirectUrl);
+        $this->driver = new FacebookProvider($clientId, $clientSecret, $redirectPath);
     }
 
-    protected function handlePOST()
+    public function getProviderName()
     {
-        if('session' === $this->resource)
-        {
-            /** @var RedirectResponse $response */
-            $response = $this->driver->redirect();
-            $url = $response->getTargetUrl();
-
-            $this->response = ['response' => ['url' => $url]];
-
-            return ResponseFactory::create( $this->response, $this->outputFormat, ServiceResponseInterface::HTTP_OK );
-        }
+        return self::PROVIDER_NAME;
     }
 }

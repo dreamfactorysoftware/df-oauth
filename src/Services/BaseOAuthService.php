@@ -20,13 +20,20 @@
 
 namespace DreamFactory\DSP\OAuth\Services;
 
-use DreamFactory\Rave\Resources\BaseRestResource;
 use DreamFactory\Library\Utility\Enums\Verbs;
 use DreamFactory\Library\Utility\ArrayUtils;
+use DreamFactory\Rave\Contracts\ServiceResponseInterface;
+use DreamFactory\Rave\Services\BaseRestService;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use DreamFactory\Rave\Utility\ResponseFactory;
 
-abstract class BaseOAuthService extends BaseRestResource
+abstract class BaseOAuthService extends BaseRestService
 {
+    const CALLBACK_PATH = 'dsp/oauth/callback';
+
     protected $driver;
+
+    protected $defaultRole;
 
     /**
      * @param array $settings
@@ -39,8 +46,65 @@ abstract class BaseOAuthService extends BaseRestResource
         ];
         ArrayUtils::set( $settings, "verbAliases", $verbAliases );
         parent::__construct( $settings );
-        $this->setDriver( ArrayUtils::get( $settings, 'config' ) );
+
+        $config = ArrayUtils::get( $settings, 'config' );
+        $this->defaultRole = ArrayUtils::get($config, 'default_role');
+        $this->setDriver( $config );
     }
 
     abstract protected function setDriver( $config );
+
+    abstract public function getProviderName();
+
+    protected function handlePOST()
+    {
+        if('session' === $this->resource)
+        {
+            /** @var RedirectResponse $response */
+            $response = $this->driver->redirect();
+            $url = $response->getTargetUrl();
+
+            /** @var Request $request */
+            $request = $this->request->getDriver();
+
+            if($request->ajax())
+            {
+                $result= [ 'response' => [ 'login_url' => $url ] ];
+
+                return $result;
+            }
+            else{
+                return $response;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @return ServiceResponseInterface
+     */
+    protected function respond()
+    {
+        if ( $this->response instanceof ServiceResponseInterface || $this->response instanceof RedirectResponse)
+        {
+            return $this->response;
+        }
+
+        return ResponseFactory::create( $this->response, $this->outputFormat, ServiceResponseInterface::HTTP_OK );
+    }
+
+    public function getDriver()
+    {
+        return $this->driver;
+    }
+
+    public function getName()
+    {
+        return $this->name;
+    }
+
+    public function getDefaultRole()
+    {
+        return $this->defaultRole;
+    }
 }

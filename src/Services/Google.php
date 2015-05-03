@@ -20,24 +20,8 @@
 
 namespace DreamFactory\DSP\OAuth\Services;
 
-use DreamFactory\Library\Utility\ArrayUtils;
-use DreamFactory\DSP\OAuth\Components\TwitterProvider;
 
-class Twitter extends BaseOAuthService
+class Google extends BaseOAuthService
 {
-    const PROVIDER_NAME = 'twitter';
-    
-    protected function setDriver($config)
-    {
-        $clientId = ArrayUtils::get($config, 'client_id');
-        $clientSecret = ArrayUtils::get($config, 'client_secret');
-        $redirectPath = self::CALLBACK_PATH.'?service='.$this->name;
 
-        $this->driver = new TwitterProvider($clientId, $clientSecret, $redirectPath);
-    }
-
-    public function getProviderName()
-    {
-        return self::PROVIDER_NAME;
-    }
 }
