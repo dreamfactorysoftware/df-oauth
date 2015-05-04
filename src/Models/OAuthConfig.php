@@ -26,7 +26,7 @@ class OAuthConfig extends BaseServiceConfigModel
 {
     protected $table = 'oauth_config';
 
-    protected $fillable = ['service_id', 'client_id', 'client_secret'];
+    protected $fillable = ['service_id', 'default_role', 'client_id', 'client_secret'];
 
     protected $encrypted = ['client_secret'];
 }
