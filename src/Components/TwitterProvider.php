@@ -30,8 +30,8 @@ class TwitterProvider extends \Laravel\Socialite\One\TwitterProvider
         /** @var Request $request */
         $request = \Request::instance();
 
-        $host = $request->getHost();
-        $redirectUrl = 'http://'.$host.'/'.$redirectPath;
+        $host = $request->getSchemeAndHttpHost();
+        $redirectUrl = $host.'/'.$redirectPath;
 
         $serverConfig = [
             'identifier' => $clientId,

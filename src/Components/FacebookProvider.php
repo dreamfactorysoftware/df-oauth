@@ -29,8 +29,8 @@ class FacebookProvider extends \Laravel\Socialite\Two\FacebookProvider
         /** @var Request $request */
         $request = \Request::instance();
 
-        $host = $request->getHost();
-        $redirectUrl = 'http://'.$host.'/'.$redirectPath;
+        $host = $request->getSchemeAndHttpHost();
+        $redirectUrl = $host.'/'.$redirectPath;
 
         parent::__construct($request, $clientId, $clientSecret, $redirectUrl);
     }
