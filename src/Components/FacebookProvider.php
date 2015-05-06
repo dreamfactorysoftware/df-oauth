@@ -22,16 +22,22 @@ namespace DreamFactory\DSP\OAuth\Components;
 
 use Illuminate\Http\Request;
 
+/**
+ * Class FacebookProvider
+ *
+ * @package DreamFactory\DSP\OAuth\Components
+ */
 class FacebookProvider extends \Laravel\Socialite\Two\FacebookProvider
 {
-    public function __construct($clientId, $clientSecret, $redirectPath)
+    /**
+     * @param Request $clientId
+     * @param string  $clientSecret
+     * @param string  $redirectUrl
+     */
+    public function __construct( $clientId, $clientSecret, $redirectUrl )
     {
         /** @var Request $request */
         $request = \Request::instance();
-
-        $host = $request->getSchemeAndHttpHost();
-        $redirectUrl = $host.'/'.$redirectPath;
-
-        parent::__construct($request, $clientId, $clientSecret, $redirectUrl);
+        parent::__construct( $request, $clientId, $clientSecret, $redirectUrl );
     }
 }

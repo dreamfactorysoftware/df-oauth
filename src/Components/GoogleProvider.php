@@ -18,33 +18,26 @@
  * limitations under the License.
  */
 
-namespace DreamFactory\DSP\OAuth\Services;
+namespace DreamFactory\DSP\OAuth\Components;
 
-use DreamFactory\DSP\OAuth\Components\GithubProvider;
-use DreamFactory\Library\Utility\ArrayUtils;
+use Illuminate\Http\Request;
 
-class Github extends BaseOAuthService
+/**
+ * Class GoogleProvider
+ *
+ * @package DreamFactory\DSP\OAuth\Components
+ */
+class GoogleProvider extends \Laravel\Socialite\Two\GoogleProvider
 {
     /**
-     * OAuth service provider name.
+     * @param Request $clientId
+     * @param string  $clientSecret
+     * @param string  $redirectUrl
      */
-    const PROVIDER_NAME = 'github';
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function setDriver($config)
+    public function __construct( $clientId, $clientSecret, $redirectUrl )
     {
-        $clientId = ArrayUtils::get($config, 'client_id');
-        $clientSecret = ArrayUtils::get($config, 'client_secret');
-        $this->driver = new GithubProvider($clientId, $clientSecret, $this->redirectUrl);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getProviderName()
-    {
-        return self::PROVIDER_NAME;
+        /** @var Request $request */
+        $request = \Request::instance();
+        parent::__construct( $request, $clientId, $clientSecret, $redirectUrl );
     }
 }

@@ -77,5 +77,22 @@ class DatabaseSeeder extends Seeder
             );
             $this->command->info( 'Github OAuth service type seeded!' );
         }
+
+        if ( !ServiceType::whereName( 'oauth_google' )->exists() )
+        {
+            // Add the service type
+            ServiceType::create(
+                [
+                    'name'           => 'oauth_google',
+                    'class_name'     => "DreamFactory\\DSP\\OAuth\\Services\\Google",
+                    'config_handler' => "DreamFactory\\DSP\\OAuth\\Models\\OAuthConfig",
+                    'label'          => 'Google OAuth',
+                    'description'    => 'OAuth service for supporting Google authentication and API access.',
+                    'group'          => 'oauth',
+                    'singleton'      => 1
+                ]
+            );
+            $this->command->info( 'Google OAuth service type seeded!' );
+        }
     }
 }

@@ -25,17 +25,24 @@ use DreamFactory\DSP\OAuth\Components\TwitterProvider;
 
 class Twitter extends BaseOAuthService
 {
+    /**
+     * OAuth service provider name.
+     */
     const PROVIDER_NAME = 'twitter';
-    
+
+    /**
+     * {@inheritdoc}
+     */
     protected function setDriver($config)
     {
         $clientId = ArrayUtils::get($config, 'client_id');
         $clientSecret = ArrayUtils::get($config, 'client_secret');
-        $redirectPath = self::CALLBACK_PATH.'?service='.$this->name;
-
-        $this->driver = new TwitterProvider($clientId, $clientSecret, $redirectPath);
+        $this->driver = new TwitterProvider($clientId, $clientSecret, $this->redirectUrl);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getProviderName()
     {
         return self::PROVIDER_NAME;

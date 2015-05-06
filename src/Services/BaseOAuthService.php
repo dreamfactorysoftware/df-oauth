@@ -20,19 +20,33 @@
 
 namespace DreamFactory\DSP\OAuth\Services;
 
+use DreamFactory\DSP\OAuth\Models\OAuthConfig;
 use DreamFactory\Library\Utility\Enums\Verbs;
 use DreamFactory\Library\Utility\ArrayUtils;
 use DreamFactory\Rave\Contracts\ServiceResponseInterface;
 use DreamFactory\Rave\Services\BaseRestService;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use DreamFactory\Rave\Utility\ResponseFactory;
+use Laravel\Socialite\Contracts\Provider;
 
 abstract class BaseOAuthService extends BaseRestService
 {
-    const CALLBACK_PATH = 'dsp/oauth/callback';
+    /**
+     * Callback handler url
+     * @var string
+     */
+    protected $redirectUrl;
 
+    /**
+     * OAuth service provider.
+     * @var Provider
+     */
     protected $driver;
 
+    /**
+     * Default role id configured for this OAuth service.
+     * @var integer
+     */
     protected $defaultRole;
 
     /**
@@ -49,13 +63,31 @@ abstract class BaseOAuthService extends BaseRestService
 
         $config = ArrayUtils::get( $settings, 'config' );
         $this->defaultRole = ArrayUtils::get($config, 'default_role');
+        $this->redirectUrl = OAuthConfig::generateRedirectUrl($this->name);
         $this->setDriver( $config );
     }
 
+    /**
+     * Sets the OAuth service provider.
+     *
+     * @param array $config
+     *
+     * @return mixed
+     */
     abstract protected function setDriver( $config );
 
+    /**
+     * Returns the OAuth provider name.
+     *
+     * @return string
+     */
     abstract public function getProviderName();
 
+    /**
+     * Handles POST request on this service.
+     *
+     * @return array|bool|RedirectResponse
+     */
     protected function handlePOST()
     {
         if('session' === $this->resource)
@@ -93,16 +125,31 @@ abstract class BaseOAuthService extends BaseRestService
         return ResponseFactory::create( $this->response, $this->outputFormat, ServiceResponseInterface::HTTP_OK );
     }
 
+    /**
+     * Returns the OAuth service provider.
+     *
+     * @return Provider
+     */
     public function getDriver()
     {
         return $this->driver;
     }
 
+    /**
+     * Returns the service name.
+     *
+     * @return string
+     */
     public function getName()
     {
         return $this->name;
     }
 
+    /**
+     * Returns the default role id configured for this service.
+     *
+     * @return int|mixed
+     */
     public function getDefaultRole()
     {
         return $this->defaultRole;

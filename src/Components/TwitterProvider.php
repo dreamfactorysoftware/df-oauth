@@ -23,22 +23,27 @@ namespace DreamFactory\DSP\OAuth\Components;
 use Illuminate\Http\Request;
 use League\OAuth1\Client\Server\Twitter as TwitterServer;
 
+/**
+ * Class TwitterProvider
+ *
+ * @package DreamFactory\DSP\OAuth\Components
+ */
 class TwitterProvider extends \Laravel\Socialite\One\TwitterProvider
 {
-    public function __construct($clientId, $clientSecret, $redirectPath)
+    /**
+     * @param string $clientId
+     * @param string $clientSecret
+     * @param string $redirectUrl
+     */
+    public function __construct( $clientId, $clientSecret, $redirectUrl )
     {
         /** @var Request $request */
         $request = \Request::instance();
-
-        $host = $request->getSchemeAndHttpHost();
-        $redirectUrl = $host.'/'.$redirectPath;
-
         $serverConfig = [
-            'identifier' => $clientId,
-            'secret' => $clientSecret,
+            'identifier'   => $clientId,
+            'secret'       => $clientSecret,
             'callback_uri' => $redirectUrl
         ];
-
-        parent::__construct($request, new TwitterServer($serverConfig));
+        parent::__construct( $request, new TwitterServer( $serverConfig ) );
     }
 }

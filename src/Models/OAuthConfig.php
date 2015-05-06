@@ -20,13 +20,76 @@
 
 namespace DreamFactory\DSP\OAuth\Models;
 
+use DreamFactory\DSP\OAuth\Services\BaseOAuthService;
+use DreamFactory\Library\Utility\ArrayUtils;
+use DreamFactory\Rave\Contracts\ServiceConfigHandlerInterface;
 use DreamFactory\Rave\Models\BaseServiceConfigModel;
 
-class OAuthConfig extends BaseServiceConfigModel
+/**
+ * Class OAuthConfig
+ *
+ * @package DreamFactory\DSP\OAuth\Models
+ */
+class OAuthConfig extends BaseServiceConfigModel implements ServiceConfigHandlerInterface
 {
+    /**
+     * Callback handler base route
+     */
+    const CALLBACK_PATH = 'dsp/oauth/callback';
+
     protected $table = 'oauth_config';
 
-    protected $fillable = ['service_id', 'default_role', 'client_id', 'client_secret'];
+    protected $fillable = ['service_id', 'default_role', 'client_id', 'client_secret', 'redirect_url'];
 
     protected $encrypted = ['client_secret'];
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function service()
+    {
+        return $this->belongsTo( 'DreamFactory\Rave\Models\Service', 'service_id', 'id' );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function setConfig( $id, $config )
+    {
+        if(null === ArrayUtils::get($config, 'redirect_url'))
+        {
+            ArrayUtils::set($config, 'redirect_url', 'foo');
+        }
+        parent::setConfig($id, $config);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setAttribute( $key, $value )
+    {
+        if('redirect_url' === $key)
+        {
+            $service = $this->service()->first();
+            $serviceName = $service->name;
+            $value = static::generateRedirectUrl($serviceName);
+        }
+
+        parent::setAttribute( $key, $value );
+    }
+
+    /**
+     * Generates OAuth redirect url based on service name and returns it.
+     *
+     * @param string $serviceName
+     *
+     * @return string
+     */
+    public static function generateRedirectUrl($serviceName)
+    {
+        $host = \Request::getSchemeAndHttpHost();
+        $url = $host.'/'.static::CALLBACK_PATH.'/'.$serviceName;
+
+        return $url;
+    }
 }

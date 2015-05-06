@@ -34,6 +34,7 @@ class UpdateUserTableForOauthSupport extends Migration
                 $t->foreign('default_role')->references('id')->on('role')->onDelete('restrict');
                 $t->string( 'client_id' );
                 $t->longText( 'client_secret' );
+                $t->string('redirect_url');
             }
         );
     }

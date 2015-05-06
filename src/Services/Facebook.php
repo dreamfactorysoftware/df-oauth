@@ -20,27 +20,30 @@
 
 namespace DreamFactory\DSP\OAuth\Services;
 
-
 use DreamFactory\DSP\OAuth\Components\FacebookProvider;
 use DreamFactory\Library\Utility\ArrayUtils;
-use Illuminate\Http\Request;
-use DreamFactory\Rave\Utility\ResponseFactory;
-use DreamFactory\Rave\Contracts\ServiceResponseInterface;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 
 class Facebook extends BaseOAuthService
 {
+    /**
+     * OAuth service provider name.
+     */
     const PROVIDER_NAME = 'facebook';
 
+    /**
+     * {@inheritdoc}
+     */
     protected function setDriver($config)
     {
         $clientId = ArrayUtils::get($config, 'client_id');
         $clientSecret = ArrayUtils::get($config, 'client_secret');
-        $redirectPath = self::CALLBACK_PATH.'?service='.$this->name;
 
-        $this->driver = new FacebookProvider($clientId, $clientSecret, $redirectPath);
+        $this->driver = new FacebookProvider($clientId, $clientSecret, $this->redirectUrl);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getProviderName()
     {
         return self::PROVIDER_NAME;
