@@ -23,28 +23,29 @@ namespace DreamFactory\DSP\OAuth\Services;
 use DreamFactory\DSP\OAuth\Models\OAuthConfig;
 use DreamFactory\Library\Utility\Enums\Verbs;
 use DreamFactory\Library\Utility\ArrayUtils;
-use DreamFactory\Rave\Contracts\ServiceResponseInterface;
 use DreamFactory\Rave\Services\BaseRestService;
 use Symfony\Component\HttpFoundation\RedirectResponse;
-use DreamFactory\Rave\Utility\ResponseFactory;
 use Laravel\Socialite\Contracts\Provider;
 
 abstract class BaseOAuthService extends BaseRestService
 {
     /**
      * Callback handler url
+     *
      * @var string
      */
     protected $redirectUrl;
 
     /**
      * OAuth service provider.
+     *
      * @var Provider
      */
     protected $driver;
 
     /**
      * Default role id configured for this OAuth service.
+     *
      * @var integer
      */
     protected $defaultRole;
@@ -62,8 +63,8 @@ abstract class BaseOAuthService extends BaseRestService
         parent::__construct( $settings );
 
         $config = ArrayUtils::get( $settings, 'config' );
-        $this->defaultRole = ArrayUtils::get($config, 'default_role');
-        $this->redirectUrl = OAuthConfig::generateRedirectUrl($this->name);
+        $this->defaultRole = ArrayUtils::get( $config, 'default_role' );
+        $this->redirectUrl = OAuthConfig::generateRedirectUrl( $this->name );
         $this->setDriver( $config );
     }
 
@@ -90,39 +91,28 @@ abstract class BaseOAuthService extends BaseRestService
      */
     protected function handlePOST()
     {
-        if('session' === $this->resource)
+        if ( 'session' === $this->resource )
         {
             /** @var RedirectResponse $response */
             $response = $this->driver->redirect();
             $url = $response->getTargetUrl();
 
-            /** @var Request $request */
+            /** @var \Request $request */
             $request = $this->request->getDriver();
 
-            if($request->ajax())
+            if ( $request->ajax() )
             {
-                $result= [ 'response' => [ 'login_url' => $url ] ];
+                $result = [ 'response' => [ 'login_url' => $url ] ];
 
                 return $result;
             }
-            else{
+            else
+            {
                 return $response;
             }
         }
+
         return false;
-    }
-
-    /**
-     * @return ServiceResponseInterface
-     */
-    protected function respond()
-    {
-        if ( $this->response instanceof ServiceResponseInterface || $this->response instanceof RedirectResponse)
-        {
-            return $this->response;
-        }
-
-        return ResponseFactory::create( $this->response, $this->outputFormat, ServiceResponseInterface::HTTP_OK );
     }
 
     /**
