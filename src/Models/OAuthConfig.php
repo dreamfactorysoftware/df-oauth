@@ -1,8 +1,8 @@
 <?php
 /**
- * This file is part of the DreamFactory Rave(tm)
+ * This file is part of the DreamFactory(tm)
  *
- * DreamFactory Rave(tm) <http://github.com/dreamfactorysoftware/rave>
+ * DreamFactory(tm) <http://github.com/dreamfactorysoftware/rave>
  * Copyright 2012-2014 DreamFactory Software, Inc. <support@dreamfactory.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,17 +18,17 @@
  * limitations under the License.
  */
 
-namespace DreamFactory\DSP\OAuth\Models;
+namespace DreamFactory\Core\OAuth\Models;
 
-use DreamFactory\DSP\OAuth\Services\BaseOAuthService;
+use DreamFactory\Core\OAuth\Services\BaseOAuthService;
 use DreamFactory\Library\Utility\ArrayUtils;
-use DreamFactory\Rave\Contracts\ServiceConfigHandlerInterface;
-use DreamFactory\Rave\Models\BaseServiceConfigModel;
+use DreamFactory\Core\Contracts\ServiceConfigHandlerInterface;
+use DreamFactory\Core\Models\BaseServiceConfigModel;
 
 /**
  * Class OAuthConfig
  *
- * @package DreamFactory\DSP\OAuth\Models
+ * @package DreamFactory\Core\OAuth\Models
  */
 class OAuthConfig extends BaseServiceConfigModel implements ServiceConfigHandlerInterface
 {
@@ -48,7 +48,7 @@ class OAuthConfig extends BaseServiceConfigModel implements ServiceConfigHandler
      */
     public function service()
     {
-        return $this->belongsTo( 'DreamFactory\Rave\Models\Service', 'service_id', 'id' );
+        return $this->belongsTo( 'DreamFactory\Core\Models\Service', 'service_id', 'id' );
     }
 
     /**

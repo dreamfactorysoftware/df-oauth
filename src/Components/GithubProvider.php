@@ -1,8 +1,8 @@
 <?php
 /**
- * This file is part of the DreamFactory Rave(tm)
+ * This file is part of the DreamFactory(tm)
  *
- * DreamFactory Rave(tm) <http://github.com/dreamfactorysoftware/rave>
+ * DreamFactory(tm) <http://github.com/dreamfactorysoftware/rave>
  * Copyright 2012-2014 DreamFactory Software, Inc. <support@dreamfactory.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,14 +18,14 @@
  * limitations under the License.
  */
 
-namespace DreamFactory\DSP\OAuth\Components;
+namespace DreamFactory\Core\OAuth\Components;
 
 use Illuminate\Http\Request;
 
 /**
  * Class GithubProvider
  *
- * @package DreamFactory\DSP\OAuth\Components
+ * @package DreamFactory\Core\OAuth\Components
  */
 class GithubProvider extends \Laravel\Socialite\Two\GithubProvider
 {

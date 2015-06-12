@@ -1,8 +1,8 @@
 <?php
 /**
- * This file is part of the DreamFactory Rave(tm)
+ * This file is part of the DreamFactory(tm)
  *
- * DreamFactory Rave(tm) <http://github.com/dreamfactorysoftware/rave>
+ * DreamFactory(tm) <http://github.com/dreamfactorysoftware/rave>
  * Copyright 2012-2014 DreamFactory Software, Inc. <support@dreamfactory.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,19 +17,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-namespace DreamFactory\DSP\OAuth\Database\Seeds;
+namespace DreamFactory\Core\OAuth\Database\Seeds;
 
-use DreamFactory\Rave\Database\Seeds\BaseModelSeeder;
+use DreamFactory\Core\Database\Seeds\BaseModelSeeder;
 
 class DatabaseSeeder extends BaseModelSeeder
 {
-    protected $modelClass = 'DreamFactory\\Rave\\Models\\ServiceType';
+    protected $modelClass = 'DreamFactory\\Core\\Models\\ServiceType';
 
     protected $records = [
         [
             'name'           => 'oauth_facebook',
-            'class_name'     => "DreamFactory\\DSP\\OAuth\\Services\\Facebook",
-            'config_handler' => "DreamFactory\\DSP\\OAuth\\Models\\OAuthConfig",
+            'class_name'     => "DreamFactory\\Core\\OAuth\\Services\\Facebook",
+            'config_handler' => "DreamFactory\\Core\\OAuth\\Models\\OAuthConfig",
             'label'          => 'Facebook OAuth',
             'description'    => 'OAuth service for supporting Facebook authentication and API access.',
             'group'          => 'oauth',
@@ -37,8 +37,8 @@ class DatabaseSeeder extends BaseModelSeeder
         ],
         [
             'name'           => 'oauth_twitter',
-            'class_name'     => "DreamFactory\\DSP\\OAuth\\Services\\Twitter",
-            'config_handler' => "DreamFactory\\DSP\\OAuth\\Models\\OAuthConfig",
+            'class_name'     => "DreamFactory\\Core\\OAuth\\Services\\Twitter",
+            'config_handler' => "DreamFactory\\Core\\OAuth\\Models\\OAuthConfig",
             'label'          => 'Twitter OAuth',
             'description'    => 'OAuth service for supporting Twitter authentication and API access.',
             'group'          => 'oauth',
@@ -46,8 +46,8 @@ class DatabaseSeeder extends BaseModelSeeder
         ],
         [
             'name'           => 'oauth_github',
-            'class_name'     => "DreamFactory\\DSP\\OAuth\\Services\\Github",
-            'config_handler' => "DreamFactory\\DSP\\OAuth\\Models\\OAuthConfig",
+            'class_name'     => "DreamFactory\\Core\\OAuth\\Services\\Github",
+            'config_handler' => "DreamFactory\\Core\\OAuth\\Models\\OAuthConfig",
             'label'          => 'Github OAuth',
             'description'    => 'OAuth service for supporting Github authentication and API access.',
             'group'          => 'oauth',
@@ -55,8 +55,8 @@ class DatabaseSeeder extends BaseModelSeeder
         ],
         [
             'name'           => 'oauth_google',
-            'class_name'     => "DreamFactory\\DSP\\OAuth\\Services\\Google",
-            'config_handler' => "DreamFactory\\DSP\\OAuth\\Models\\OAuthConfig",
+            'class_name'     => "DreamFactory\\Core\\OAuth\\Services\\Google",
+            'config_handler' => "DreamFactory\\Core\\OAuth\\Models\\OAuthConfig",
             'label'          => 'Google OAuth',
             'description'    => 'OAuth service for supporting Google authentication and API access.',
             'group'          => 'oauth',

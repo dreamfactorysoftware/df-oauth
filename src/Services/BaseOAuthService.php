@@ -1,8 +1,8 @@
 <?php
 /**
- * This file is part of the DreamFactory Rave(tm)
+ * This file is part of the DreamFactory(tm)
  *
- * DreamFactory Rave(tm) <http://github.com/dreamfactorysoftware/rave>
+ * DreamFactory(tm) <http://github.com/dreamfactorysoftware/rave>
  * Copyright 2012-2014 DreamFactory Software, Inc. <support@dreamfactory.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,12 +18,12 @@
  * limitations under the License.
  */
 
-namespace DreamFactory\DSP\OAuth\Services;
+namespace DreamFactory\Core\OAuth\Services;
 
-use DreamFactory\DSP\OAuth\Models\OAuthConfig;
+use DreamFactory\Core\OAuth\Models\OAuthConfig;
 use DreamFactory\Library\Utility\Enums\Verbs;
 use DreamFactory\Library\Utility\ArrayUtils;
-use DreamFactory\Rave\Services\BaseRestService;
+use DreamFactory\Core\Services\BaseRestService;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Laravel\Socialite\Contracts\Provider;
 

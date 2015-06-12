@@ -1,11 +1,11 @@
 {
-  "name": "dreamfactory/dsp-oauth",
-  "description": "OAuth support for DreamFactory DSP 2.0",
+  "name": "dreamfactory/df-oauth",
+  "description": "OAuth support for DreamFactory Platform 2.0",
   "minimum-stability": "dev",
   "keywords": [
     "dreamfactory",
     "dsp",
-    "rave",
+    "rest",
     "oauth"
   ],
   "homepage": "https://www.dreamfactory.com/",
@@ -22,18 +22,18 @@
   ],
   "support": {
     "email": "support@dreamfactory.com",
-    "issues": "https://github.com/dreamfactorysoftware/rave/issues",
-    "wiki": "https://github.com/dreamfactorysoftware/rave/wiki",
-    "source": "https://github.com/dreamfactorysoftware/rave"
+    "source": "https://github.com/dreamfactorysoftware/df-oauth",
+    "issues": "https://github.com/dreamfactorysoftware/df-oauth/issues",
+    "wiki": "https://wiki.dreamfactory.com"
   },
   "require": {
-    "dreamfactory/rave": "dev-develop as dev-master",
-    "dreamfactory/rave-user-mgmt": "dev-develop as dev-master",
+    "dreamfactory/df-core": "dev-develop as dev-master",
+    "dreamfactory/df-user-mgmt": "dev-develop as dev-master",
     "laravel/socialite": "~2.0"
   },
   "autoload":{
     "psr-4": {
-      "DreamFactory\\DSP\\OAuth\\":"src/"
+      "DreamFactory\\Core\\OAuth\\":"src/"
     }
   }
 }
