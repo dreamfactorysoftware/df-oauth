@@ -13,27 +13,24 @@ class UpdateUserTableForOauthSupport extends Migration
      */
     public function up()
     {
-        if ( !Schema::hasColumn( 'user', 'oauth_provider' ) )
-        {
+        if (!Schema::hasColumn('user', 'oauth_provider')) {
             Schema::table(
                 'user',
-                function ( Blueprint $t )
-                {
-                    $t->string( 'oauth_provider', 50 )->nullable()->after( 'remember_token' );
+                function (Blueprint $t){
+                    $t->string('oauth_provider', 50)->nullable()->after('remember_token');
                 }
             );
         }
 
         Schema::create(
             'oauth_config',
-            function ( Blueprint $t )
-            {
-                $t->integer( 'service_id' )->unsigned()->primary();
-                $t->foreign( 'service_id' )->references( 'id' )->on( 'service' )->onDelete( 'cascade' );
+            function (Blueprint $t){
+                $t->integer('service_id')->unsigned()->primary();
+                $t->foreign('service_id')->references('id')->on('service')->onDelete('cascade');
                 $t->integer('default_role')->unsigned()->index();
                 $t->foreign('default_role')->references('id')->on('role')->onDelete('restrict');
-                $t->string( 'client_id' );
-                $t->longText( 'client_secret' );
+                $t->string('client_id');
+                $t->longText('client_secret');
                 $t->string('redirect_url');
             }
         );
@@ -46,18 +43,15 @@ class UpdateUserTableForOauthSupport extends Migration
      */
     public function down()
     {
-        if ( Schema::hasColumn( 'user', 'oauth_provider' ) )
-        {
+        if (Schema::hasColumn('user', 'oauth_provider')) {
             Schema::table(
                 'user',
-                function ( Blueprint $t )
-                {
-                    $t->dropColumn( 'oauth_provider' );
+                function (Blueprint $t){
+                    $t->dropColumn('oauth_provider');
                 }
             );
         }
 
         Schema::dropIfExists('oauth_config');
     }
-
 }

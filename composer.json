@@ -31,9 +31,9 @@
     "dreamfactory/df-user": "dev-develop as dev-master",
     "laravel/socialite": "~2.0"
   },
-  "autoload":{
+  "autoload": {
     "psr-4": {
-      "DreamFactory\\Core\\OAuth\\":"src/"
+      "DreamFactory\\Core\\OAuth\\": "src/"
     }
   }
 }
