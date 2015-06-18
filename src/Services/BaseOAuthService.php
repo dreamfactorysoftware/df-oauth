@@ -1,12 +1,14 @@
 <?php
  namespace DreamFactory\Core\OAuth\Services;
 
+use DreamFactory\Core\Models\User;
 use DreamFactory\Core\OAuth\Models\OAuthConfig;
 use DreamFactory\Library\Utility\Enums\Verbs;
 use DreamFactory\Library\Utility\ArrayUtils;
 use DreamFactory\Core\Services\BaseRestService;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Laravel\Socialite\Contracts\Provider;
+use Laravel\Socialite\Contracts\User as OAuthUserContract;
 
 abstract class BaseOAuthService extends BaseRestService
 {
@@ -120,5 +122,56 @@ abstract class BaseOAuthService extends BaseRestService
     public function getDefaultRole()
     {
         return $this->defaultRole;
+    }
+
+    /**
+     * If does not exists, creates a shadow OAuth user using user info provided
+     * by the OAuth service provider and assigns default role to this user
+     * for all apps in the system. If user already exists then updates user's
+     * role for all apps and returns it.
+     *
+     * @param OAuthUserContract $OAuthUser
+     *
+     * @return User
+     * @throws \Exception
+     */
+    public function createShadowOAuthUser(OAuthUserContract $OAuthUser)
+    {
+        $fullName = $OAuthUser->getName();
+        @list($firstName, $lastName) = explode(' ', $fullName);
+
+        $email = $OAuthUser->getEmail();
+        $serviceName = $this->getName();
+        $providerName = $this->getProviderName();
+        $accessToken = $OAuthUser->token;
+
+        if (empty($email)) {
+            $email = $OAuthUser->getId() . '+' . $serviceName . '@' . $serviceName . '.com';
+        } else {
+            list($emailId, $domain) = explode('@', $email);
+            $email = $emailId . '+' . $serviceName . '@' . $domain;
+        }
+
+        $user = User::whereEmail($email)->first();
+
+        if (empty($user)) {
+            $data = [
+                'name'           => $fullName,
+                'first_name'     => $firstName,
+                'last_name'      => $lastName,
+                'email'          => $email,
+                'is_active'      => 1,
+                'oauth_provider' => $providerName,
+                'password'       => $accessToken
+            ];
+
+            $user = User::create($data);
+        }
+
+        $defaultRole = $this->getDefaultRole();
+
+        User::applyDefaultUserAppRole($user, $defaultRole);
+
+        return $user;
     }
 }
