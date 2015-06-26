@@ -2,16 +2,22 @@
 namespace DreamFactory\Core\OAuth\Database\Seeds;
 
 use DreamFactory\Core\Database\Seeds\BaseModelSeeder;
+use DreamFactory\Core\Models\ServiceType;
+use DreamFactory\Core\OAuth\Models\OAuthConfig;
+use DreamFactory\Core\OAuth\Services\Facebook;
+use DreamFactory\Core\OAuth\Services\Github;
+use DreamFactory\Core\OAuth\Services\Google;
+use DreamFactory\Core\OAuth\Services\Twitter;
 
 class DatabaseSeeder extends BaseModelSeeder
 {
-    protected $modelClass = 'DreamFactory\\Core\\Models\\ServiceType';
+    protected $modelClass = ServiceType::class;
 
     protected $records = [
         [
             'name'           => 'oauth_facebook',
-            'class_name'     => "DreamFactory\\Core\\OAuth\\Services\\Facebook",
-            'config_handler' => "DreamFactory\\Core\\OAuth\\Models\\OAuthConfig",
+            'class_name'     => Facebook::class,
+            'config_handler' => OAuthConfig::class,
             'label'          => 'Facebook OAuth',
             'description'    => 'OAuth service for supporting Facebook authentication and API access.',
             'group'          => 'oauth',
@@ -19,8 +25,8 @@ class DatabaseSeeder extends BaseModelSeeder
         ],
         [
             'name'           => 'oauth_twitter',
-            'class_name'     => "DreamFactory\\Core\\OAuth\\Services\\Twitter",
-            'config_handler' => "DreamFactory\\Core\\OAuth\\Models\\OAuthConfig",
+            'class_name'     => Twitter::class,
+            'config_handler' => OAuthConfig::class,
             'label'          => 'Twitter OAuth',
             'description'    => 'OAuth service for supporting Twitter authentication and API access.',
             'group'          => 'oauth',
@@ -28,8 +34,8 @@ class DatabaseSeeder extends BaseModelSeeder
         ],
         [
             'name'           => 'oauth_github',
-            'class_name'     => "DreamFactory\\Core\\OAuth\\Services\\Github",
-            'config_handler' => "DreamFactory\\Core\\OAuth\\Models\\OAuthConfig",
+            'class_name'     => Github::class,
+            'config_handler' => OAuthConfig::class,
             'label'          => 'Github OAuth',
             'description'    => 'OAuth service for supporting Github authentication and API access.',
             'group'          => 'oauth',
@@ -37,8 +43,8 @@ class DatabaseSeeder extends BaseModelSeeder
         ],
         [
             'name'           => 'oauth_google',
-            'class_name'     => "DreamFactory\\Core\\OAuth\\Services\\Google",
-            'config_handler' => "DreamFactory\\Core\\OAuth\\Models\\OAuthConfig",
+            'class_name'     => Google::class,
+            'config_handler' => OAuthConfig::class,
             'label'          => 'Google OAuth',
             'description'    => 'OAuth service for supporting Google authentication and API access.',
             'group'          => 'oauth',
