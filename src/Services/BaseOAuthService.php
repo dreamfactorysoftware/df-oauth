@@ -1,5 +1,5 @@
 <?php
- namespace DreamFactory\Core\OAuth\Services;
+namespace DreamFactory\Core\OAuth\Services;
 
 use DreamFactory\Core\Models\User;
 use DreamFactory\Core\OAuth\Models\OAuthConfig;
@@ -68,30 +68,25 @@ abstract class BaseOAuthService extends BaseRestService
     abstract public function getProviderName();
 
     /**
-     * Handles POST request on this service.
+     * Handles login using this service.
+     *
+     * @param \Request $request
      *
      * @return array|bool|RedirectResponse
      */
-    protected function handlePOST()
+    public function handleLogin($request)
     {
-        if ('session' === $this->resource) {
-            /** @var RedirectResponse $response */
-            $response = $this->driver->redirect();
-            $url = $response->getTargetUrl();
+        /** @var RedirectResponse $response */
+        $response = $this->driver->redirect();
+        $url = $response->getTargetUrl();
 
-            /** @var \Request $request */
-            $request = $this->request->getDriver();
+        if ($request->ajax()) {
+            $result = ['response' => ['login_url' => $url]];
 
-            if ($request->ajax()) {
-                $result = ['response' => ['login_url' => $url]];
-
-                return $result;
-            } else {
-                return $response;
-            }
+            return $result;
+        } else {
+            return $response;
         }
-
-        return false;
     }
 
     /**
