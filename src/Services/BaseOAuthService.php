@@ -77,11 +77,11 @@ abstract class BaseOAuthService extends BaseRestService
     public function handleLogin($request)
     {
         /** @var RedirectResponse $response */
-        $response = $this->driver->redirect();
+        $response = $this->driver->stateless()->redirect();
         $url = $response->getTargetUrl();
 
         if ($request->ajax()) {
-            $result = ['response' => ['login_url' => $url]];
+            $result = ['response' => ['redirect' => true, 'url' => $url]];
 
             return $result;
         } else {
