@@ -18,7 +18,9 @@ class Twitter extends BaseOAuthService
     {
         $clientId = ArrayUtils::get($config, 'client_id');
         $clientSecret = ArrayUtils::get($config, 'client_secret');
-        $this->driver = new TwitterProvider($clientId, $clientSecret, $this->redirectUrl);
+        $redirectUrl = ArrayUtils::get($config, 'redirect_url');
+
+        $this->driver = new TwitterProvider($clientId, $clientSecret, $redirectUrl);
     }
 
     /**

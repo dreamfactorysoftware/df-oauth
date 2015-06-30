@@ -2,23 +2,18 @@
 namespace DreamFactory\Core\OAuth\Services;
 
 use DreamFactory\Core\Models\User;
-use DreamFactory\Core\OAuth\Models\OAuthConfig;
 use DreamFactory\Library\Utility\Enums\Verbs;
 use DreamFactory\Library\Utility\ArrayUtils;
 use DreamFactory\Core\Services\BaseRestService;
+use DreamFactory\Core\Utility\ServiceHandler;
+use DreamFactory\Core\Utility\Session;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Laravel\Socialite\Contracts\Provider;
 use Laravel\Socialite\Contracts\User as OAuthUserContract;
+use Carbon\Carbon;
 
 abstract class BaseOAuthService extends BaseRestService
 {
-    /**
-     * Callback handler url
-     *
-     * @var string
-     */
-    protected $redirectUrl;
-
     /**
      * OAuth service provider.
      *
@@ -47,7 +42,6 @@ abstract class BaseOAuthService extends BaseRestService
 
         $config = ArrayUtils::get($settings, 'config');
         $this->defaultRole = ArrayUtils::get($config, 'default_role');
-        $this->redirectUrl = OAuthConfig::generateRedirectUrl($this->name);
         $this->setDriver($config);
     }
 
@@ -70,23 +64,32 @@ abstract class BaseOAuthService extends BaseRestService
     /**
      * Handles login using this service.
      *
-     * @param \Request $request
-     *
      * @return array|bool|RedirectResponse
      */
-    public function handleLogin($request)
+    public function handleLogin()
     {
         /** @var RedirectResponse $response */
         $response = $this->driver->stateless()->redirect();
         $url = $response->getTargetUrl();
 
-        if ($request->ajax()) {
-            $result = ['response' => ['redirect' => true, 'url' => $url]];
+        $result = ['response' => ['redirect' => true, 'url' => $url]];
 
-            return $result;
-        } else {
-            return $response;
-        }
+        return $result;
+    }
+
+    public function handleOAuthCallback()
+    {
+        /** @var Provider $driver */
+        $driver = $this->getDriver();
+
+        /** @var User $user */
+        $user = $driver->stateless()->user();
+
+        $dfUser = $this->createShadowOAuthUser($user);
+        $dfUser->update(['last_login_date' => Carbon::now()->toDateTimeString()]);
+        Session::setUserInfoWithJWT($dfUser);
+
+        return Session::getPublicInfo();
     }
 
     /**

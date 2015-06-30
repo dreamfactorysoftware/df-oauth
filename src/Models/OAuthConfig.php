@@ -47,7 +47,7 @@ class OAuthConfig extends BaseServiceConfigModel implements ServiceConfigHandler
      */
     public function setAttribute($key, $value)
     {
-        if ('redirect_url' === $key) {
+        if ('redirect_url' === $key && empty($value)) {
             $service = $this->service()->first();
             $serviceName = $service->name;
             $value = static::generateRedirectUrl($serviceName);
