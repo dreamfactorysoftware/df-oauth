@@ -1,7 +1,7 @@
 <?php
 namespace DreamFactory\Core\OAuth\Models;
 
-use DreamFactory\Library\Utility\ArrayUtils;
+use DreamFactory\Core\Exceptions\BadRequestException;
 use DreamFactory\Core\Contracts\ServiceConfigHandlerInterface;
 use DreamFactory\Core\Models\BaseServiceConfigModel;
 
@@ -12,11 +12,6 @@ use DreamFactory\Core\Models\BaseServiceConfigModel;
  */
 class OAuthConfig extends BaseServiceConfigModel implements ServiceConfigHandlerInterface
 {
-    /**
-     * Callback handler base route
-     */
-    const CALLBACK_PATH = 'dsp/oauth/callback';
-
     protected $table = 'oauth_config';
 
     protected $fillable = ['service_id', 'default_role', 'client_id', 'client_secret', 'redirect_url'];
@@ -31,43 +26,20 @@ class OAuthConfig extends BaseServiceConfigModel implements ServiceConfigHandler
         return $this->belongsTo('DreamFactory\Core\Models\Service', 'service_id', 'id');
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function setConfig($id, $config)
+    public static function validateConfig($config)
     {
-        if (null === ArrayUtils::get($config, 'redirect_url')) {
-            ArrayUtils::set($config, 'redirect_url', 'foo');
-        }
-        parent::setConfig($id, $config);
-    }
+        $validator = \Validator::make($config, [
+            'default_role'  => 'required',
+            'client_id'     => 'required',
+            'client_secret' => 'required',
+            'redirect_url'  => 'required'
+        ]);
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setAttribute($key, $value)
-    {
-        if ('redirect_url' === $key && empty($value)) {
-            $service = $this->service()->first();
-            $serviceName = $service->name;
-            $value = static::generateRedirectUrl($serviceName);
+        if ($validator->fails()) {
+            $messages = $validator->messages()->getMessages();
+            throw new BadRequestException('Validation failed.', null, null, $messages);
         }
 
-        parent::setAttribute($key, $value);
-    }
-
-    /**
-     * Generates OAuth redirect url based on service name and returns it.
-     *
-     * @param string $serviceName
-     *
-     * @return string
-     */
-    public static function generateRedirectUrl($serviceName)
-    {
-        $host = \Request::getSchemeAndHttpHost();
-        $url = $host . '/' . static::CALLBACK_PATH . '/' . $serviceName;
-
-        return $url;
+        return true;
     }
 }
