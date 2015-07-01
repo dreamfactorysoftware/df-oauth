@@ -26,7 +26,7 @@ use Laravel\Socialite\One\AbstractProvider;
 use League\OAuth1\Client\Credentials\TemporaryCredentials;
 use Illuminate\Http\RedirectResponse;
 
-trait DFOAuthOneProvider
+trait DfOAuthOneProvider
 {
     /**
      * Indicates if the session state should be utilized.
