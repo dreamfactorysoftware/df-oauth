@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Laravel\Socialite\Contracts\Provider;
 use Laravel\Socialite\Contracts\User as OAuthUserContract;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 abstract class BaseOAuthService extends BaseRestService
 {
@@ -64,14 +65,18 @@ abstract class BaseOAuthService extends BaseRestService
     /**
      * Handles login using this service.
      *
+     * @param Request $request
      * @return array|bool|RedirectResponse
      */
-    public function handleLogin()
+    public function handleLogin($request)
     {
         /** @var RedirectResponse $response */
         $response = $this->driver->stateless()->redirect();
-        $url = $response->getTargetUrl();
+        if(!$request->ajax()){
+            return $response;
+        }
 
+        $url = $response->getTargetUrl();
         $result = ['response' => ['redirect' => true, 'url' => $url]];
 
         return $result;

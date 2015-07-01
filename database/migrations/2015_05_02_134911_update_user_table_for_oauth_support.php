@@ -32,6 +32,7 @@ class UpdateUserTableForOauthSupport extends Migration
                 $t->string('client_id');
                 $t->longText('client_secret');
                 $t->string('redirect_url');
+                $t->string('icon_class')->nullable();
             }
         );
     }
