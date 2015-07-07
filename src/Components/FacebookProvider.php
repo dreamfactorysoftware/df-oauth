@@ -1,6 +1,8 @@
 <?php
 namespace DreamFactory\Core\OAuth\Components;
 
+use DreamFactory\Library\Utility\ArrayUtils;
+use Laravel\Socialite\Two\InvalidStateException;
 use Illuminate\Http\Request;
 
 /**

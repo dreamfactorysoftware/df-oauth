@@ -18,8 +18,9 @@ class Facebook extends BaseOAuthService
     {
         $clientId = ArrayUtils::get($config, 'client_id');
         $clientSecret = ArrayUtils::get($config, 'client_secret');
+        $redirectUrl = ArrayUtils::get($config, 'redirect_url');
 
-        $this->driver = new FacebookProvider($clientId, $clientSecret, $this->redirectUrl);
+        $this->driver = new FacebookProvider($clientId, $clientSecret, $redirectUrl);
     }
 
     /**

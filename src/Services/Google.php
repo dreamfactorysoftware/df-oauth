@@ -18,7 +18,9 @@ class Google extends BaseOAuthService
     {
         $clientId = ArrayUtils::get($config, 'client_id');
         $clientSecret = ArrayUtils::get($config, 'client_secret');
-        $this->driver = new GoogleProvider($clientId, $clientSecret, $this->redirectUrl);
+        $redirectUrl = ArrayUtils::get($config, 'redirect_url');
+
+        $this->driver = new GoogleProvider($clientId, $clientSecret, $redirectUrl);
     }
 
     /**

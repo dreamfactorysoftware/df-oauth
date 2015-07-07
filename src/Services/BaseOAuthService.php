@@ -1,24 +1,20 @@
 <?php
- namespace DreamFactory\Core\OAuth\Services;
+namespace DreamFactory\Core\OAuth\Services;
 
 use DreamFactory\Core\Models\User;
-use DreamFactory\Core\OAuth\Models\OAuthConfig;
 use DreamFactory\Library\Utility\Enums\Verbs;
 use DreamFactory\Library\Utility\ArrayUtils;
 use DreamFactory\Core\Services\BaseRestService;
+use DreamFactory\Core\Utility\ServiceHandler;
+use DreamFactory\Core\Utility\Session;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Laravel\Socialite\Contracts\Provider;
 use Laravel\Socialite\Contracts\User as OAuthUserContract;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 abstract class BaseOAuthService extends BaseRestService
 {
-    /**
-     * Callback handler url
-     *
-     * @var string
-     */
-    protected $redirectUrl;
-
     /**
      * OAuth service provider.
      *
@@ -47,7 +43,6 @@ abstract class BaseOAuthService extends BaseRestService
 
         $config = ArrayUtils::get($settings, 'config');
         $this->defaultRole = ArrayUtils::get($config, 'default_role');
-        $this->redirectUrl = OAuthConfig::generateRedirectUrl($this->name);
         $this->setDriver($config);
     }
 
@@ -68,30 +63,38 @@ abstract class BaseOAuthService extends BaseRestService
     abstract public function getProviderName();
 
     /**
-     * Handles POST request on this service.
+     * Handles login using this service.
      *
+     * @param Request $request
      * @return array|bool|RedirectResponse
      */
-    protected function handlePOST()
+    public function handleLogin($request)
     {
-        if ('session' === $this->resource) {
-            /** @var RedirectResponse $response */
-            $response = $this->driver->redirect();
-            $url = $response->getTargetUrl();
-
-            /** @var \Request $request */
-            $request = $this->request->getDriver();
-
-            if ($request->ajax()) {
-                $result = ['response' => ['login_url' => $url]];
-
-                return $result;
-            } else {
-                return $response;
-            }
+        /** @var RedirectResponse $response */
+        $response = $this->driver->stateless()->redirect();
+        if(!$request->ajax()){
+            return $response;
         }
 
-        return false;
+        $url = $response->getTargetUrl();
+        $result = ['response' => ['redirect' => true, 'url' => $url]];
+
+        return $result;
+    }
+
+    public function handleOAuthCallback()
+    {
+        /** @var Provider $driver */
+        $driver = $this->getDriver();
+
+        /** @var User $user */
+        $user = $driver->stateless()->user();
+
+        $dfUser = $this->createShadowOAuthUser($user);
+        $dfUser->update(['last_login_date' => Carbon::now()->toDateTimeString()]);
+        Session::setUserInfoWithJWT($dfUser);
+
+        return Session::getPublicInfo();
     }
 
     /**
