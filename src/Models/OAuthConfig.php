@@ -1,6 +1,7 @@
 <?php
 namespace DreamFactory\Core\OAuth\Models;
 
+use DreamFactory\Core\Models\Service;
 use DreamFactory\Library\Utility\ArrayUtils;
 use DreamFactory\Core\Contracts\ServiceConfigHandlerInterface;
 use DreamFactory\Core\Models\BaseServiceConfigModel;
@@ -28,7 +29,7 @@ class OAuthConfig extends BaseServiceConfigModel implements ServiceConfigHandler
      */
     public function service()
     {
-        return $this->belongsTo('DreamFactory\Core\Models\Service', 'service_id', 'id');
+        return $this->belongsTo(Service::class, 'service_id', 'id');
     }
 
     /**

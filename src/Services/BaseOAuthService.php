@@ -160,7 +160,7 @@ abstract class BaseOAuthService extends BaseRestService
                 'first_name'     => $firstName,
                 'last_name'      => $lastName,
                 'email'          => $email,
-                'is_active'      => 1,
+                'is_active'      => true,
                 'oauth_provider' => $providerName,
                 'password'       => $accessToken
             ];

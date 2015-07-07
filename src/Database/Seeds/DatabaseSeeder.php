@@ -21,7 +21,7 @@ class DatabaseSeeder extends BaseModelSeeder
             'label'          => 'Facebook OAuth',
             'description'    => 'OAuth service for supporting Facebook authentication and API access.',
             'group'          => 'oauth',
-            'singleton'      => 1
+            'singleton'      => false
         ],
         [
             'name'           => 'oauth_twitter',
@@ -30,7 +30,7 @@ class DatabaseSeeder extends BaseModelSeeder
             'label'          => 'Twitter OAuth',
             'description'    => 'OAuth service for supporting Twitter authentication and API access.',
             'group'          => 'oauth',
-            'singleton'      => 1
+            'singleton'      => false
         ],
         [
             'name'           => 'oauth_github',
@@ -39,7 +39,7 @@ class DatabaseSeeder extends BaseModelSeeder
             'label'          => 'Github OAuth',
             'description'    => 'OAuth service for supporting Github authentication and API access.',
             'group'          => 'oauth',
-            'singleton'      => 1
+            'singleton'      => false
         ],
         [
             'name'           => 'oauth_google',
@@ -48,7 +48,7 @@ class DatabaseSeeder extends BaseModelSeeder
             'label'          => 'Google OAuth',
             'description'    => 'OAuth service for supporting Google authentication and API access.',
             'group'          => 'oauth',
-            'singleton'      => 1
+            'singleton'      => false
         ]
     ];
 }
