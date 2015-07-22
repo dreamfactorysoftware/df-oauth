@@ -27,14 +27,21 @@ class OAuthConfig extends BaseServiceConfigModel implements ServiceConfigHandler
         return $this->belongsTo(Service::class, 'service_id', 'id');
     }
 
-    public static function validateConfig($config)
+    /**
+     * @param array     $config
+     * @param bool|true $create
+     *
+     * @return bool
+     * @throws \DreamFactory\Core\Exceptions\BadRequestException
+     */
+    public static function validateConfig($config, $create = true)
     {
-        $validator = \Validator::make($config, [
+        $validator = static::makeValidator($config, [
             'default_role'  => 'required',
             'client_id'     => 'required',
             'client_secret' => 'required',
             'redirect_url'  => 'required'
-        ]);
+        ], $create);
 
         if ($validator->fails()) {
             $messages = $validator->messages()->getMessages();
