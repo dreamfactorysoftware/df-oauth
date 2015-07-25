@@ -19,6 +19,8 @@ class OAuthConfig extends BaseServiceConfigModel implements ServiceConfigHandler
 
     protected $encrypted = ['client_secret'];
 
+    protected $casts = ['service_id' => 'integer', 'default_role' => 'integer'];
+
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
