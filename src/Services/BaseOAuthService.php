@@ -91,7 +91,9 @@ abstract class BaseOAuthService extends BaseRestService
         $user = $driver->stateless()->user();
 
         $dfUser = $this->createShadowOAuthUser($user);
-        $dfUser->update(['last_login_date' => Carbon::now()->toDateTimeString()]);
+        $dfUser->last_login_date = Carbon::now()->toDateTimeString();
+        $dfUser->confirm_code = null;
+        $dfUser->save();
         Session::setUserInfoWithJWT($dfUser);
 
         return Session::getPublicInfo();
