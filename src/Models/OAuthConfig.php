@@ -4,6 +4,7 @@ namespace DreamFactory\Core\OAuth\Models;
 use DreamFactory\Core\Exceptions\BadRequestException;
 use DreamFactory\Core\Contracts\ServiceConfigHandlerInterface;
 use DreamFactory\Core\Models\BaseServiceConfigModel;
+use DreamFactory\Core\Models\Role;
 use DreamFactory\Core\Models\Service;
 
 /**
@@ -51,5 +52,31 @@ class OAuthConfig extends BaseServiceConfigModel implements ServiceConfigHandler
         }
 
         return true;
+    }
+
+    /**
+     * @param array $schema
+     */
+    protected static function prepareConfigSchemaField(array &$schema)
+    {
+        $roles = Role::whereIsActive(1)->get();
+        $roleList = [];
+
+        foreach($roles as $role){
+            $roleList[] = [
+                'label' => $role->name,
+                'name'  => $role->id
+            ];
+        }
+
+        parent::prepareConfigSchemaField($schema);
+
+        switch ($schema['name']) {
+            case 'default_role':
+                $schema['type'] = 'picklist';
+                $schema['values'] = $roleList;
+                $schema['description'] = 'Select a default role for users logging in with this OAuth service type.';
+                break;
+        }
     }
 }
