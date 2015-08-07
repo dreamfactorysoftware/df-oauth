@@ -1,0 +1,39 @@
+{
+  "name": "dreamfactory/df-oauth",
+  "description": "OAuth support for DreamFactory Platform 2.0",
+  "minimum-stability": "dev",
+  "keywords": [
+    "dreamfactory",
+    "dsp",
+    "rest",
+    "oauth"
+  ],
+  "homepage": "https://www.dreamfactory.com/",
+  "license": "Apache-2.0",
+  "authors": [
+    {
+      "name": "Arif Islam",
+      "email": "arifislam@dreamfactory.com"
+    },
+    {
+      "name": "Lee Hicks",
+      "email": "leehicks@dreamfactory.com"
+    }
+  ],
+  "support": {
+    "email": "support@dreamfactory.com",
+    "source": "https://github.com/dreamfactorysoftware/df-oauth",
+    "issues": "https://github.com/dreamfactorysoftware/df-oauth/issues",
+    "wiki": "https://wiki.dreamfactory.com"
+  },
+  "require": {
+    "dreamfactory/df-core": "dev-develop as dev-master",
+    "dreamfactory/df-user": "dev-develop as dev-master",
+    "laravel/socialite": "~2.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "DreamFactory\\Core\\OAuth\\": "src/"
+    }
+  }
+}

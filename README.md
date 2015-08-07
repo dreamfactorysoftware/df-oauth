@@ -1,2 +1,2 @@
-# dsp-oauth
-OAuth support for DreamFactory 2.0
+# df-oauth
+DreamFactory OAuth support.
