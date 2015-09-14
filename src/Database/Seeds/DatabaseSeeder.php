@@ -37,8 +37,8 @@ class DatabaseSeeder extends BaseModelSeeder
             'name'           => 'oauth_github',
             'class_name'     => Github::class,
             'config_handler' => OAuthConfig::class,
-            'label'          => 'Github OAuth',
-            'description'    => 'OAuth service for supporting Github authentication and API access.',
+            'label'          => 'GitHub OAuth',
+            'description'    => 'OAuth service for supporting GitHub authentication and API access.',
             'group'          => ServiceTypeGroups::OAUTH,
             'singleton'      => false
         ],
