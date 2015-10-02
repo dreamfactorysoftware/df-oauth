@@ -77,6 +77,20 @@ class OAuthConfig extends BaseServiceConfigModel implements ServiceConfigHandler
                 $schema['values'] = $roleList;
                 $schema['description'] = 'Select a default role for users logging in with this OAuth service type.';
                 break;
+            case 'client_id':
+                $schema['label'] = 'Client ID';
+                $schema['description'] = 'A public string used by the service to identify your app and to build authorization URLs.';
+                break;
+            case 'client_secret':
+                $schema['description'] = 'A private string used by the service to authenticate the identity of the application.';
+                break;
+            case 'redirect_url':
+                $schema['label'] = 'Redirect URL';
+                $schema['description'] = 'The location the user will be redirected to after a successful login.';
+                break;
+            case 'icon_class':
+                $schema['description'] = 'The icon to display for this OAuth service.';
+                break;
         }
     }
 }
