@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
  */
 class GithubProvider extends \Laravel\Socialite\Two\GithubProvider
 {
+    use DfOAuthTwoProvider;
+
     /**
      * @param Request $clientId
      * @param string  $clientSecret
