@@ -66,13 +66,14 @@ abstract class BaseOAuthService extends BaseRestService
      * Handles login using this service.
      *
      * @param Request $request
+     *
      * @return array|bool|RedirectResponse
      */
     public function handleLogin($request)
     {
         /** @var RedirectResponse $response */
-        $response = $this->driver->stateless()->redirect();
-        if(!$request->ajax()){
+        $response = $this->driver->redirect();
+        if (!$request->ajax()) {
             return $response;
         }
 
@@ -88,7 +89,7 @@ abstract class BaseOAuthService extends BaseRestService
         $driver = $this->getDriver();
 
         /** @var User $user */
-        $user = $driver->stateless()->user();
+        $user = $driver->user();
 
         $dfUser = $this->createShadowOAuthUser($user);
         $dfUser->last_login_date = Carbon::now()->toDateTimeString();

@@ -8,6 +8,7 @@ use DreamFactory\Core\OAuth\Models\OAuthConfig;
 use DreamFactory\Core\OAuth\Services\Facebook;
 use DreamFactory\Core\OAuth\Services\Github;
 use DreamFactory\Core\OAuth\Services\Google;
+use DreamFactory\Core\OAuth\Services\LinkedIn;
 use DreamFactory\Core\OAuth\Services\Twitter;
 
 class DatabaseSeeder extends BaseModelSeeder
@@ -48,6 +49,15 @@ class DatabaseSeeder extends BaseModelSeeder
             'config_handler' => OAuthConfig::class,
             'label'          => 'Google OAuth',
             'description'    => 'OAuth service for supporting Google authentication and API access.',
+            'group'          => ServiceTypeGroups::OAUTH,
+            'singleton'      => false
+        ],
+        [
+            'name'           => 'oauth_linkedin',
+            'class_name'     => LinkedIn::class,
+            'config_handler' => OAuthConfig::class,
+            'label'          => 'LinkedIn OAuth',
+            'description'    => 'OAuth service for supporting LinkedIn authentication and API access.',
             'group'          => ServiceTypeGroups::OAUTH,
             'singleton'      => false
         ]

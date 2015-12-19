@@ -12,6 +12,7 @@ use League\OAuth1\Client\Server\Twitter as TwitterServer;
 class TwitterProvider extends \Laravel\Socialite\One\TwitterProvider
 {
     use DfOAuthOneProvider;
+
     /**
      * @param string $clientId
      * @param string $clientSecret

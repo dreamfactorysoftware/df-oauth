@@ -3,12 +3,7 @@ namespace DreamFactory\Core\OAuth\Components;
 
 use Illuminate\Http\Request;
 
-/**
- * Class FacebookProvider
- *
- * @package DreamFactory\Core\OAuth\Components
- */
-class FacebookProvider extends \Laravel\Socialite\Two\FacebookProvider
+class LinkedInProvider extends \Laravel\Socialite\Two\LinkedInProvider
 {
     use DfOAuthTwoProvider;
 

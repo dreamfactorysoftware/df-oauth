@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
  */
 class GoogleProvider extends \Laravel\Socialite\Two\GoogleProvider
 {
+    use DfOAuthTwoProvider;
+
     /**
      * @param Request $clientId
      * @param string  $clientSecret
