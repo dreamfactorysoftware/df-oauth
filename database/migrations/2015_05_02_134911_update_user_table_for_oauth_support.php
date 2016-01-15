@@ -28,7 +28,9 @@ class UpdateUserTableForOauthSupport extends Migration
                 $t->integer('service_id')->unsigned()->primary();
                 $t->foreign('service_id')->references('id')->on('service')->onDelete('cascade');
                 $t->integer('default_role')->unsigned()->index();
-                $t->foreign('default_role')->references('id')->on('role')->onDelete('restrict');
+                // previously set to 'restrict' which isn't supported by all databases
+                // removing the onDelete clause gets the same behavior as No Action and Restrict are defaults.
+                $t->foreign('default_role')->references('id')->on('role');
                 $t->string('client_id');
                 $t->longText('client_secret');
                 $t->string('redirect_url');
