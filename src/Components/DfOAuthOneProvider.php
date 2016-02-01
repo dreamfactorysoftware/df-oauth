@@ -2,7 +2,7 @@
 namespace DreamFactory\Core\OAuth\Components;
 
 use League\OAuth1\Client\Credentials\TemporaryCredentials;
-use Illuminate\Http\RedirectResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 trait DfOAuthOneProvider
 {
