@@ -9,6 +9,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+## [0.3.0] - 2016-05-27
+### Changed
+- Moved seeding functionality to service provider to adhere to df-core changes.
+
 ## [0.2.1] - 2016-02-02
 ### Fixed
 - OAuth redirect response.
@@ -28,7 +32,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 0.1.0 - 2015-10-24
 First official release working with the new [dreamfactory](https://github.com/dreamfactorysoftware/dreamfactory) project.
 
-[Unreleased]: https://github.com/dreamfactorysoftware/df-oauth/compare/0.2.1...HEAD
+[Unreleased]: https://github.com/dreamfactorysoftware/df-oauth/compare/0.3.0...HEAD
+[0.3.0]: https://github.com/dreamfactorysoftware/df-oauth/compare/0.2.1...0.3.0
 [0.2.1]: https://github.com/dreamfactorysoftware/df-oauth/compare/0.2.0...0.2.1
 [0.2.0]: https://github.com/dreamfactorysoftware/df-oauth/compare/0.1.1...0.2.0
 [0.1.1]: https://github.com/dreamfactorysoftware/df-oauth/compare/0.1.0...0.1.1
