@@ -3,7 +3,6 @@
 namespace DreamFactory\Core\OAuth\Services;
 
 use DreamFactory\Core\OAuth\Components\LinkedInProvider;
-use DreamFactory\Library\Utility\ArrayUtils;
 
 class LinkedIn extends BaseOAuthService
 {
@@ -15,9 +14,9 @@ class LinkedIn extends BaseOAuthService
     /** @inheritdoc */
     protected function setDriver($config)
     {
-        $clientId = ArrayUtils::get($config, 'client_id');
-        $clientSecret = ArrayUtils::get($config, 'client_secret');
-        $redirectUrl = ArrayUtils::get($config, 'redirect_url');
+        $clientId = array_get($config, 'client_id');
+        $clientSecret = array_get($config, 'client_secret');
+        $redirectUrl = array_get($config, 'redirect_url');
 
         $this->driver = new LinkedInProvider($clientId, $clientSecret, $redirectUrl);
     }
