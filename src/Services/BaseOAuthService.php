@@ -3,7 +3,6 @@ namespace DreamFactory\Core\OAuth\Services;
 
 use DreamFactory\Core\Models\User;
 use DreamFactory\Library\Utility\Enums\Verbs;
-use DreamFactory\Library\Utility\ArrayUtils;
 use DreamFactory\Core\Services\BaseRestService;
 use DreamFactory\Core\Utility\Session;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -33,15 +32,16 @@ abstract class BaseOAuthService extends BaseRestService
      */
     public function __construct($settings = [])
     {
-        $verbAliases = [
+        $settings = (array)$settings;
+        $settings['verbAliases'] = [
             Verbs::PUT   => Verbs::POST,
             Verbs::MERGE => Verbs::PATCH
         ];
-        ArrayUtils::set($settings, "verbAliases", $verbAliases);
+        
         parent::__construct($settings);
 
-        $config = ArrayUtils::get($settings, 'config');
-        $this->defaultRole = ArrayUtils::get($config, 'default_role');
+        $config = array_get($settings, 'config');
+        $this->defaultRole = array_get($config, 'default_role');
         $this->setDriver($config);
     }
 

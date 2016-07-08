@@ -26,7 +26,7 @@
     "wiki":   "https://wiki.dreamfactory.com"
   },
   "require":     {
-    "dreamfactory/df-core": "~0.3.0",
+    "dreamfactory/df-core": "~0.3.2",
     "dreamfactory/df-user": "~0.3.0",
     "laravel/socialite":    "~2.0"
   },
