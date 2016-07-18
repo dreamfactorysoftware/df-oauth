@@ -7,6 +7,7 @@ use DreamFactory\Core\OAuth\Services\Facebook;
 use DreamFactory\Core\OAuth\Services\Github;
 use DreamFactory\Core\OAuth\Services\Google;
 use DreamFactory\Core\OAuth\Services\LinkedIn;
+use DreamFactory\Core\OAuth\Services\MicrosoftLive;
 use DreamFactory\Core\OAuth\Services\Twitter;
 use DreamFactory\Core\Services\ServiceManager;
 use DreamFactory\Core\Services\ServiceType;
@@ -74,6 +75,18 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
                     'config_handler' => OAuthConfig::class,
                     'factory'        => function ($config){
                         return new LinkedIn($config);
+                    },
+                ])
+            );
+            $df->addType(
+                new ServiceType([
+                    'name'           => 'oauth_microsoft-live',
+                    'label'          => 'Microsoft Live OAuth',
+                    'description'    => 'OAuth service for supporting Microsoft Live authentication and API access.',
+                    'group'          => ServiceTypeGroups::OAUTH,
+                    'config_handler' => OAuthConfig::class,
+                    'factory'        => function ($config){
+                        return new MicrosoftLive($config);
                     },
                 ])
             );

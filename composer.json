@@ -28,7 +28,8 @@
   "require":     {
     "dreamfactory/df-core": "~0.3.2",
     "dreamfactory/df-user": "~0.3.0",
-    "laravel/socialite":    "~2.0"
+    "laravel/socialite":    "~2.0",
+    "socialiteproviders/microsoft-live": "^2.0"
   },
   "autoload":    {
     "psr-4": {
