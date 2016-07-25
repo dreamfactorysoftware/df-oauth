@@ -8,6 +8,7 @@
 
 namespace DreamFactory\Core\OAuth\Services;
 
+use DreamFactory\Core\OAuth\Components\MicrosoftLiveIntProvider;
 use DreamFactory\Core\OAuth\Components\MicrosoftLiveProvider;
 
 class MicrosoftLive extends BaseOAuthService
@@ -23,8 +24,13 @@ class MicrosoftLive extends BaseOAuthService
         $clientId = array_get($config, 'client_id');
         $clientSecret = array_get($config, 'client_secret');
         $redirectUrl = array_get($config, 'redirect_url');
+        $customProvider = array_get($config, 'custom_provider');
 
-        $this->driver = new MicrosoftLiveProvider($clientId, $clientSecret, $redirectUrl);
+        if (!empty($customProvider) && boolval($customProvider) === true) {
+            $this->driver = new MicrosoftLiveIntProvider($clientId, $clientSecret, $redirectUrl);
+        } else {
+            $this->driver = new MicrosoftLiveProvider($clientId, $clientSecret, $redirectUrl);
+        }
     }
 
     /** @inheritdoc */
