@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: arif
- * Date: 7/18/16
- * Time: 10:35 AM
- */
-
 namespace DreamFactory\Core\OAuth\Services;
 
 use DreamFactory\Core\OAuth\Components\MicrosoftLiveIntProvider;
