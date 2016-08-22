@@ -16,11 +16,19 @@ class OAuthConfig extends BaseServiceConfigModel implements ServiceConfigHandler
 {
     protected $table = 'oauth_config';
 
-    protected $fillable = ['service_id', 'default_role', 'client_id', 'client_secret', 'redirect_url', 'icon_class'];
+    protected $fillable = [
+        'service_id',
+        'default_role',
+        'client_id',
+        'client_secret',
+        'redirect_url',
+        'icon_class',
+        'custom_provider'
+    ];
 
     protected $encrypted = ['client_secret'];
 
-    protected $casts = ['service_id' => 'integer', 'default_role' => 'integer'];
+    protected $casts = ['service_id' => 'integer', 'default_role' => 'integer', 'custom_provider' => 'boolean'];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -62,7 +70,7 @@ class OAuthConfig extends BaseServiceConfigModel implements ServiceConfigHandler
         $roles = Role::whereIsActive(1)->get();
         $roleList = [];
 
-        foreach($roles as $role){
+        foreach ($roles as $role) {
             $roleList[] = [
                 'label' => $role->name,
                 'name'  => $role->id
@@ -79,10 +87,12 @@ class OAuthConfig extends BaseServiceConfigModel implements ServiceConfigHandler
                 break;
             case 'client_id':
                 $schema['label'] = 'Client ID';
-                $schema['description'] = 'A public string used by the service to identify your app and to build authorization URLs.';
+                $schema['description'] =
+                    'A public string used by the service to identify your app and to build authorization URLs.';
                 break;
             case 'client_secret':
-                $schema['description'] = 'A private string used by the service to authenticate the identity of the application.';
+                $schema['description'] =
+                    'A private string used by the service to authenticate the identity of the application.';
                 break;
             case 'redirect_url':
                 $schema['label'] = 'Redirect URL';
@@ -90,6 +100,11 @@ class OAuthConfig extends BaseServiceConfigModel implements ServiceConfigHandler
                 break;
             case 'icon_class':
                 $schema['description'] = 'The icon to display for this OAuth service.';
+                break;
+            case 'custom_provider':
+                $schema['label'] = 'Use custom OAuth 2.0 provider for this type';
+                $schema['description'] =
+                    'Some OAuth 2.0 type allows for custom/alternative provider in DreamFactory. Check this if your OAuth type supports alternate provider and you want to use that.';
                 break;
         }
     }
