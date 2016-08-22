@@ -26,8 +26,8 @@
     "wiki":   "https://wiki.dreamfactory.com"
   },
   "require":     {
-    "dreamfactory/df-core": "~0.3.2",
-    "dreamfactory/df-user": "~0.3.0",
+    "dreamfactory/df-core": "~0.4.0",
+    "dreamfactory/df-user": "~0.4.0",
     "laravel/socialite":    "~2.0",
     "socialiteproviders/microsoft-live": "^2.0"
   },
@@ -38,7 +38,7 @@
   },
   "extra":       {
     "branch-alias": {
-      "dev-develop": "0.3.x-dev"
+      "dev-develop": "0.4.x-dev"
     }
   }
 }
