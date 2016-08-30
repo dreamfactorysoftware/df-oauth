@@ -5,6 +5,7 @@ use DreamFactory\Core\Models\User;
 use DreamFactory\Library\Utility\Enums\Verbs;
 use DreamFactory\Core\Services\BaseRestService;
 use DreamFactory\Core\Utility\Session;
+use Laravel\Socialite\AbstractUser;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Laravel\Socialite\Contracts\Provider;
 use Laravel\Socialite\Contracts\User as OAuthUserContract;
@@ -37,7 +38,7 @@ abstract class BaseOAuthService extends BaseRestService
             Verbs::PUT   => Verbs::POST,
             Verbs::MERGE => Verbs::PATCH
         ];
-        
+
         parent::__construct($settings);
 
         $config = array_get($settings, 'config');
@@ -86,8 +87,7 @@ abstract class BaseOAuthService extends BaseRestService
     {
         /** @var Provider $driver */
         $driver = $this->getDriver();
-
-        /** @var User $user */
+        /** @var \Laravel\Socialite\Two\User $user */
         $user = $driver->user();
 
         $dfUser = $this->createShadowOAuthUser($user);
@@ -95,8 +95,10 @@ abstract class BaseOAuthService extends BaseRestService
         $dfUser->confirm_code = null;
         $dfUser->save();
         Session::setUserInfoWithJWT($dfUser);
+        $response = Session::getPublicInfo();
+        $response['oauth_token'] = $user->token;
 
-        return Session::getPublicInfo();
+        return $response;
     }
 
     /**

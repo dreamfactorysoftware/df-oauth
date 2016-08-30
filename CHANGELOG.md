@@ -5,6 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 ### Added
 - Support for Microsoft Live OAuth.
+- DF-833 Returning OAuth token after OAuth authentication.
 
 ### Changed
 
