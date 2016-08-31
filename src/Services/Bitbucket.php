@@ -1,14 +1,14 @@
 <?php
 namespace DreamFactory\Core\OAuth\Services;
 
-use DreamFactory\Core\OAuth\Components\GoogleProvider;
+use DreamFactory\Core\OAuth\Components\BitbucketProvider;
 
-class Google extends BaseOAuthService
+class Bitbucket extends BaseOAuthService
 {
     /**
      * OAuth service provider name.
      */
-    const PROVIDER_NAME = 'google';
+    const PROVIDER_NAME = 'bitbucket';
 
     /**
      * {@inheritdoc}
@@ -19,7 +19,7 @@ class Google extends BaseOAuthService
         $clientSecret = array_get($config, 'client_secret');
         $redirectUrl = array_get($config, 'redirect_url');
 
-        $this->provider = new GoogleProvider($clientId, $clientSecret, $redirectUrl);
+        $this->provider = new BitbucketProvider($clientId, $clientSecret, $redirectUrl);
     }
 
     /**

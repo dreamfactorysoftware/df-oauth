@@ -6,6 +6,19 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 
 trait DfOAuthTwoProvider
 {
+    /** @var  \Request */
+    protected $request;
+
+    /**
+     * {@inheritdoc}
+     */
+    abstract public function usesState();
+
+    /**
+     * {@inheritdoc}
+     */
+    abstract public function isStateless();
+
     /**
      * {@inheritdoc}
      */

@@ -23,12 +23,16 @@ class OAuthConfig extends BaseServiceConfigModel implements ServiceConfigHandler
         'client_secret',
         'redirect_url',
         'icon_class',
-        'custom_provider'
+        'custom_provider',
     ];
 
     protected $encrypted = ['client_secret'];
 
-    protected $casts = ['service_id' => 'integer', 'default_role' => 'integer', 'custom_provider' => 'boolean'];
+    protected $casts = [
+        'service_id'        => 'integer',
+        'default_role'      => 'integer',
+        'custom_provider'   => 'boolean',
+    ];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -48,7 +52,6 @@ class OAuthConfig extends BaseServiceConfigModel implements ServiceConfigHandler
     public static function validateConfig($config, $create = true)
     {
         $validator = static::makeValidator($config, [
-            'default_role'  => 'required',
             'client_id'     => 'required',
             'client_secret' => 'required',
             'redirect_url'  => 'required'
@@ -103,8 +106,8 @@ class OAuthConfig extends BaseServiceConfigModel implements ServiceConfigHandler
                 break;
             case 'custom_provider':
                 $schema['label'] = 'Use custom OAuth 2.0 provider for this type';
-                $schema['description'] =
-                    'Some OAuth 2.0 type allows for custom/alternative provider in DreamFactory. Check this if your OAuth type supports alternate provider and you want to use that.';
+                $schema['description'] = 'Some OAuth 2.0 type allows for custom/alternative provider in DreamFactory. ' .
+                    'Check this if your OAuth type supports alternate provider and you want to use that.';
                 break;
         }
     }

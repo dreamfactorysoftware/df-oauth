@@ -13,13 +13,13 @@ class Twitter extends BaseOAuthService
     /**
      * {@inheritdoc}
      */
-    protected function setDriver($config)
+    protected function setProvider($config)
     {
         $clientId = array_get($config, 'client_id');
         $clientSecret = array_get($config, 'client_secret');
         $redirectUrl = array_get($config, 'redirect_url');
 
-        $this->driver = new TwitterProvider($clientId, $clientSecret, $redirectUrl);
+        $this->provider = new TwitterProvider($clientId, $clientSecret, $redirectUrl);
     }
 
     /**
