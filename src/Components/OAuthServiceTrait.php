@@ -195,4 +195,9 @@ trait OAuthServiceTrait
     {
         return OAuthTokenMap::getCachedToken($this->id, Session::getCurrentUserId());
     }
+
+    protected function getOAuthResponse()
+    {
+        return OAuthTokenMap::whereServiceId($this->id)->whereUserId(Session::getCurrentUserId())->value('response');
+    }
 }
