@@ -7,7 +7,6 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - DF-833 Returning OAuth token after OAuth authentication.
 
 ### Changed
-- Moved much of the basic OAuth handling to a trait so other service types can use it
 
 ### Fixed
 
