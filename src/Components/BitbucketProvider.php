@@ -5,7 +5,7 @@ use Illuminate\Http\Request;
 use League\OAuth1\Client\Server\Bitbucket as BitbucketServer;
 
 /**
- * Class TwitterProvider
+ * Class BitbucketProvider
  *
  * @package DreamFactory\Core\OAuth\Components
  */
