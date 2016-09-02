@@ -1,16 +1,16 @@
 <?php
 namespace DreamFactory\Core\OAuth\Services;
 
+use Carbon\Carbon;
 use DreamFactory\Core\Models\User;
-use DreamFactory\Library\Utility\Enums\Verbs;
+use DreamFactory\Core\OAuth\Models\OAuthTokenMap;
 use DreamFactory\Core\Services\BaseRestService;
 use DreamFactory\Core\Utility\Session;
-use Laravel\Socialite\AbstractUser;
-use Symfony\Component\HttpFoundation\RedirectResponse;
+use DreamFactory\Library\Utility\Enums\Verbs;
+use Illuminate\Http\Request;
 use Laravel\Socialite\Contracts\Provider;
 use Laravel\Socialite\Contracts\User as OAuthUserContract;
-use Carbon\Carbon;
-use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 abstract class BaseOAuthService extends BaseRestService
 {
@@ -19,8 +19,7 @@ abstract class BaseOAuthService extends BaseRestService
      *
      * @var Provider
      */
-    protected $driver;
-
+    protected $provider;
     /**
      * Default role id configured for this OAuth service.
      *
@@ -43,7 +42,7 @@ abstract class BaseOAuthService extends BaseRestService
 
         $config = array_get($settings, 'config');
         $this->defaultRole = array_get($config, 'default_role');
-        $this->setDriver($config);
+        $this->setProvider($config);
     }
 
     /**
@@ -53,7 +52,7 @@ abstract class BaseOAuthService extends BaseRestService
      *
      * @return mixed
      */
-    abstract protected function setDriver($config);
+    abstract protected function setProvider($config);
 
     /**
      * Returns the OAuth provider name.
@@ -63,52 +62,13 @@ abstract class BaseOAuthService extends BaseRestService
     abstract public function getProviderName();
 
     /**
-     * Handles login using this service.
-     *
-     * @param Request $request
-     *
-     * @return array|bool|RedirectResponse
-     */
-    public function handleLogin($request)
-    {
-        /** @var RedirectResponse $response */
-        $response = $this->driver->redirect();
-        if (!$request->ajax()) {
-            return $response;
-        }
-
-        $url = $response->getTargetUrl();
-        $result = ['response' => ['redirect' => true, 'url' => $url]];
-
-        return $result;
-    }
-
-    public function handleOAuthCallback()
-    {
-        /** @var Provider $driver */
-        $driver = $this->getDriver();
-        /** @var \Laravel\Socialite\Two\User $user */
-        $user = $driver->user();
-
-        $dfUser = $this->createShadowOAuthUser($user);
-        $dfUser->last_login_date = Carbon::now()->toDateTimeString();
-        $dfUser->confirm_code = null;
-        $dfUser->save();
-        Session::setUserInfoWithJWT($dfUser);
-        $response = Session::getPublicInfo();
-        $response['oauth_token'] = $user->token;
-
-        return $response;
-    }
-
-    /**
      * Returns the OAuth service provider.
      *
      * @return Provider
      */
-    public function getDriver()
+    public function getProvider()
     {
-        return $this->driver;
+        return $this->provider;
     }
 
     /**
@@ -132,6 +92,62 @@ abstract class BaseOAuthService extends BaseRestService
     }
 
     /**
+     * Handles login using this service.
+     *
+     * @param Request $request
+     *
+     * @return array|bool|RedirectResponse
+     */
+    public function handleLogin($request)
+    {
+        /** @var RedirectResponse $response */
+        $response = $this->provider->redirect();
+        if (!$request->ajax()) {
+            return $response;
+        }
+
+        $url = $response->getTargetUrl();
+        $result = ['response' => ['redirect' => true, 'url' => $url]];
+
+        return $result;
+    }
+
+    public function handleOAuthCallback()
+    {
+        $provider = $this->getProvider();
+        /** @var OAuthUserContract $user */
+        $user = $provider->user();
+
+        /** @noinspection PhpUndefinedFieldInspection */
+        $responseBody = $user->accessTokenResponseBody;
+        /** @noinspection PhpUndefinedFieldInspection */
+        $token = $user->token;
+
+        $dfUser = $this->createShadowOAuthUser($user);
+        $dfUser->last_login_date = Carbon::now()->toDateTimeString();
+        $dfUser->confirm_code = null;
+        $dfUser->save();
+
+        $map = OAuthTokenMap::whereServiceId($this->id)->whereUserId($dfUser->id)->first();
+        if (empty($map)) {
+            OAuthTokenMap::create(
+                [
+                    'user_id'    => $dfUser->id,
+                    'service_id' => $this->id,
+                    'token'      => $token,
+                    'response'   => $responseBody
+                ]);
+        } else {
+            $map->update(['token' => $token, 'response' => $responseBody]);
+        }
+        Session::setUserInfoWithJWT($dfUser);
+        $response = Session::getPublicInfo();
+        $response['oauth_token'] = $token;
+
+        return $response;
+    }
+
+    /**
      * If does not exists, creates a shadow OAuth user using user info provided
      * by the OAuth service provider and assigns default role to this user
      * for all apps in the system. If user already exists then updates user's
@@ -142,7 +158,7 @@ abstract class BaseOAuthService extends BaseRestService
      * @return User
      * @throws \Exception
      */
-    public function createShadowOAuthUser(OAuthUserContract $OAuthUser)
+    protected function createShadowOAuthUser(OAuthUserContract $OAuthUser)
     {
         $fullName = $OAuthUser->getName();
         @list($firstName, $lastName) = explode(' ', $fullName);
@@ -150,7 +166,6 @@ abstract class BaseOAuthService extends BaseRestService
         $email = $OAuthUser->getEmail();
         $serviceName = $this->getName();
         $providerName = $this->getProviderName();
-        $accessToken = $OAuthUser->token;
 
         if (empty($email)) {
             $email = $OAuthUser->getId() . '+' . $serviceName . '@' . $serviceName . '.com';
@@ -169,16 +184,26 @@ abstract class BaseOAuthService extends BaseRestService
                 'email'          => $email,
                 'is_active'      => true,
                 'oauth_provider' => $providerName,
-                'password'       => $accessToken
             ];
 
             $user = User::create($data);
         }
 
-        $defaultRole = $this->getDefaultRole();
-
-        User::applyDefaultUserAppRole($user, $defaultRole);
+        // todo Should this be done only if the user was not already there?
+        if (!empty($defaultRole = $this->getDefaultRole())) {
+            User::applyDefaultUserAppRole($user, $defaultRole);
+        }
 
         return $user;
+    }
+
+    protected function getOAuthToken()
+    {
+        return OAuthTokenMap::getCachedToken($this->id, Session::getCurrentUserId());
+    }
+
+    protected function getOAuthResponse()
+    {
+        return OAuthTokenMap::whereServiceId($this->id)->whereUserId(Session::getCurrentUserId())->value('response');
     }
 }

@@ -13,13 +13,13 @@ class Facebook extends BaseOAuthService
     /**
      * {@inheritdoc}
      */
-    protected function setDriver($config)
+    protected function setProvider($config)
     {
         $clientId = array_get($config, 'client_id');
         $clientSecret = array_get($config, 'client_secret');
         $redirectUrl = array_get($config, 'redirect_url');
 
-        $this->driver = new FacebookProvider($clientId, $clientSecret, $redirectUrl);
+        $this->provider = new FacebookProvider($clientId, $clientSecret, $redirectUrl);
     }
 
     /**
