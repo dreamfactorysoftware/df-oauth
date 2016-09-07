@@ -1,6 +1,7 @@
 <?php
 namespace DreamFactory\Core\OAuth\Models;
 
+use DreamFactory\Core\Components\AppRoleMapper;
 use DreamFactory\Core\Exceptions\BadRequestException;
 use DreamFactory\Core\Contracts\ServiceConfigHandlerInterface;
 use DreamFactory\Core\Models\BaseServiceConfigModel;
@@ -14,6 +15,8 @@ use DreamFactory\Core\Models\Service;
  */
 class OAuthConfig extends BaseServiceConfigModel implements ServiceConfigHandlerInterface
 {
+    use AppRoleMapper;
+
     protected $table = 'oauth_config';
 
     protected $fillable = [
@@ -29,9 +32,9 @@ class OAuthConfig extends BaseServiceConfigModel implements ServiceConfigHandler
     protected $encrypted = ['client_secret'];
 
     protected $casts = [
-        'service_id'        => 'integer',
-        'default_role'      => 'integer',
-        'custom_provider'   => 'boolean',
+        'service_id'      => 'integer',
+        'default_role'    => 'integer',
+        'custom_provider' => 'boolean',
     ];
 
     /**
@@ -106,7 +109,8 @@ class OAuthConfig extends BaseServiceConfigModel implements ServiceConfigHandler
                 break;
             case 'custom_provider':
                 $schema['label'] = 'Use custom OAuth 2.0 provider for this type';
-                $schema['description'] = 'Some OAuth 2.0 type allows for custom/alternative provider in DreamFactory. ' .
+                $schema['description'] =
+                    'Some OAuth 2.0 type allows for custom/alternative provider in DreamFactory. ' .
                     'Check this if your OAuth type supports alternate provider and you want to use that.';
                 break;
         }
