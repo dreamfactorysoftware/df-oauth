@@ -193,8 +193,9 @@ abstract class BaseOAuthService extends BaseRestService
         if (!empty($defaultRole = $this->getDefaultRole())) {
             User::applyDefaultUserAppRole($user, $defaultRole);
         }
-        $serviceId = $this->getServiceId();
-        User::applyAppRoleMapByService($user, $serviceId);
+        if (!empty($serviceId = $this->getServiceId())) {
+            User::applyAppRoleMapByService($user, $serviceId);
+        }
 
         return $user;
     }
