@@ -2,6 +2,7 @@
 namespace DreamFactory\Core\OAuth\Components;
 
 use Illuminate\Http\Request;
+use DreamFactory\Core\OAuth\Components\DfOAuthTwoUser as User;
 
 /**
  * Class GoogleProvider
@@ -22,5 +23,16 @@ class GoogleProvider extends \Laravel\Socialite\Two\GoogleProvider
         /** @var Request $request */
         $request = \Request::instance();
         parent::__construct($request, $clientId, $clientSecret, $redirectUrl);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function mapUserToObject(array $user)
+    {
+        return (new User)->setRaw($user)->map([
+            'id' => $user['id'], 'nickname' => array_get($user, 'nickname'), 'name' => $user['displayName'],
+            'email' => $user['emails'][0]['value'], 'avatar' => array_get($user, 'image')['url'],
+        ]);
     }
 }
