@@ -115,7 +115,7 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
             $df->addType(
                 new ServiceType([
                     'name'            => 'oauth_bitbucket',
-                    'label'           => 'Bitbucket OAuth 1.0',
+                    'label'           => 'Bitbucket OAuth',
                     'description'     => 'OAuth 1.0 service for supporting Bitbucket authentication and API access.',
                     'group'           => ServiceTypeGroups::OAUTH,
                     'config_handler'  => OAuthConfig::class,
