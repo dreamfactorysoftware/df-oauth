@@ -1,13 +1,14 @@
 <?php
 namespace DreamFactory\Core\OAuth\Components;
 
-use League\OAuth1\Client\Credentials\TemporaryCredentials;
-use League\OAuth1\Client\Credentials\TokenCredentials;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use League\OAuth1\Client\Server\Twitter as TwitterServer;
-use SocialiteProviders\Manager\OAuth1\User;
-use League\OAuth1\Client\Credentials\CredentialsException;
 
+/**
+ * Trait DfOAuthOneProvider
+ *
+ * @package DreamFactory\Core\OAuth\Components
+ */
 trait DfOAuthOneProvider
 {
     /** @var  TwitterServer */
@@ -16,18 +17,31 @@ trait DfOAuthOneProvider
     /** @var  \Request */
     protected $request;
 
-    abstract protected function mapUserToObject(array $user);
+    /** @var bool */
+    protected $stateless = true;
+
+    /** {@inheritdoc} */
+    protected function isStateless()
+    {
+        if (defined('SOCIALITEPROVIDERS_STATELESS')) {
+            return true;
+        }
+
+        return $this->stateless;
+    }
 
     /**
      * {@inheritdoc}
      */
     public function redirect()
     {
-        /** @type TemporaryCredentials $temp */
-        $temp = $this->server->getTemporaryCredentials();
-
-        $identifier = $temp->getIdentifier();
-        \Cache::put($identifier, $temp, 3);
+        if (!$this->isStateless()) {
+            $temp = $this->server->getTemporaryCredentials();
+            \Cache::put('oauth.temp', $temp, 3);
+        } else {
+            $temp = $this->server->getTemporaryCredentials();
+            \Cache::put('oauth_temp', serialize($temp), 3);
+        }
 
         return new RedirectResponse($this->server->getAuthorizationUrl($temp));
     }
@@ -37,52 +51,18 @@ trait DfOAuthOneProvider
      */
     protected function getToken()
     {
-        $key = $this->request->get('oauth_token');
-        $temp = \Cache::pull($key);
+        if (!$this->isStateless()) {
+            $temp = \Cache::pull('oauth.temp');
 
-        return $this->server->getTokenCredentials(
-            $temp, $this->request->get('oauth_token'), $this->request->get('oauth_verifier')
-        );
-    }
+            return $this->server->getTokenCredentials(
+                $temp, $this->request->get('oauth_token'), $this->request->get('oauth_verifier')
+            );
+        } else {
+            $temp = unserialize(\Cache::pull('oauth_temp'));
 
-    /**
-     * {@inheritdoc}
-     */
-    public function user()
-    {
-        if (!$this->hasNecessaryVerifier()) {
-            throw new \InvalidArgumentException('Invalid request. Missing OAuth verifier.');
+            return $this->server->getTokenCredentials(
+                $temp, $this->request->get('oauth_token'), $this->request->get('oauth_verifier')
+            );
         }
-
-        $token = $this->getToken();
-        /** @var TokenCredentials $tokenCredentials */
-        $tokenCredentials = $token['tokenCredentials'];
-
-        /** @var User $user */
-        $user = $this->mapUserToObject((array) $this->server->getUserDetails($tokenCredentials));
-
-        $user->setToken($tokenCredentials->getIdentifier(), $tokenCredentials->getSecret());
-
-        if ($user instanceof User) {
-            parse_str($token['credentialsResponseBody'], $credentialsResponseBody);
-
-            if (!$credentialsResponseBody || !is_array($credentialsResponseBody)) {
-                throw new CredentialsException('Unable to parse token credentials response.');
-            }
-
-            $user->setAccessTokenResponseBody($credentialsResponseBody);
-        }
-
-        return $user;
-    }
-
-    /**
-     * Determine if the request has the necessary OAuth verifier.
-     *
-     * @return bool
-     */
-    protected function hasNecessaryVerifier()
-    {
-        return $this->request->has('oauth_token') && $this->request->has('oauth_verifier');
     }
 }

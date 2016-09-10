@@ -2,7 +2,7 @@
 namespace DreamFactory\Core\OAuth\Components;
 
 use Illuminate\Http\Request;
-use DreamFactory\Core\OAuth\Components\DfOAuthTwoUser as User;
+use SocialiteProviders\Manager\OAuth2\User;
 
 /**
  * Class GithubProvider
@@ -31,8 +31,11 @@ class GithubProvider extends \Laravel\Socialite\Two\GithubProvider
     protected function mapUserToObject(array $user)
     {
         return (new User)->setRaw($user)->map([
-            'id' => $user['id'], 'nickname' => $user['login'], 'name' => array_get($user, 'name'),
-            'email' => array_get($user, 'email'), 'avatar' => $user['avatar_url'],
+            'id'       => $user['id'],
+            'nickname' => $user['login'],
+            'name'     => array_get($user, 'name'),
+            'email'    => array_get($user, 'email'),
+            'avatar'   => $user['avatar_url'],
         ]);
     }
 }

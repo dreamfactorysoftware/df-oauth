@@ -4,8 +4,13 @@ namespace DreamFactory\Core\OAuth\Components;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Laravel\Socialite\Two\InvalidStateException;
-use DreamFactory\Core\OAuth\Components\DfOAuthTwoUser as User;
+use SocialiteProviders\Manager\OAuth2\User;
 
+/**
+ * Trait DfOAuthTwoProvider
+ *
+ * @package DreamFactory\Core\OAuth\Components
+ */
 trait DfOAuthTwoProvider
 {
     /** @var  \Request */
@@ -13,21 +18,18 @@ trait DfOAuthTwoProvider
 
     /** @var  array */
     protected $credentialsResponseBody;
-    /**
-     * {@inheritdoc}
-     */
-    abstract public function usesState();
 
-    /**
-     * {@inheritdoc}
-     */
-    abstract public function isStateless();
+    /** {@inheritdoc} */
+    abstract protected function getUserByToken($token);
 
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     abstract protected function getCode();
 
+    /** {@inheritdoc} */
+    abstract public function usesState();
+
+    /** {@inheritdoc} */
+    abstract public function isStateless();
 
     /**
      * {@inheritdoc}
@@ -58,7 +60,7 @@ trait DfOAuthTwoProvider
     }
 
     /**
-     * @return User
+     * {@inheritdoc}
      */
     public function user()
     {
@@ -84,11 +86,7 @@ trait DfOAuthTwoProvider
     }
 
     /**
-     * Get the access token from the token response body.
-     *
-     * @param string $body
-     *
-     * @return string
+     * {@inheritdoc}
      */
     protected function parseAccessToken($body)
     {
@@ -96,11 +94,7 @@ trait DfOAuthTwoProvider
     }
 
     /**
-     * Get the refresh token from the token response body.
-     *
-     * @param string $body
-     *
-     * @return string
+     * {@inheritdoc}
      */
     protected function parseRefreshToken($body)
     {
@@ -108,11 +102,7 @@ trait DfOAuthTwoProvider
     }
 
     /**
-     * Get the expires in from the token response body.
-     *
-     * @param string $body
-     *
-     * @return string
+     * {@inheritdoc}
      */
     protected function parseExpiresIn($body)
     {

@@ -2,16 +2,14 @@
 namespace DreamFactory\Core\OAuth\Components;
 
 use Illuminate\Http\Request;
-//use League\OAuth1\Client\Server\Twitter as TwitterServer;
-//use SocialiteProviders\Twitter\Server as TwitterServer;
-use SocialiteProviders\Manager\OAuth1\User;
+use SocialiteProviders\Twitter\Provider;
 
 /**
  * Class TwitterProvider
  *
  * @package DreamFactory\Core\OAuth\Components
  */
-class TwitterProvider extends \Laravel\Socialite\One\TwitterProvider
+class TwitterProvider extends Provider
 {
     use DfOAuthOneProvider;
 
@@ -30,19 +28,5 @@ class TwitterProvider extends \Laravel\Socialite\One\TwitterProvider
             'callback_uri' => $redirectUrl
         ];
         parent::__construct($request, new TwitterServer($serverConfig));
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function mapUserToObject(array $user)
-    {
-        return (new User())->setRaw($user['extra'])->map([
-            'id' => $user['id'],
-            'nickname' => $user['nickname'],
-            'name' => $user['name'],
-            'email' => $user['email'],
-            'avatar' => $user['avatar'],
-        ]);
     }
 }

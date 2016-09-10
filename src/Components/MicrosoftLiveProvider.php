@@ -4,6 +4,11 @@ namespace DreamFactory\Core\OAuth\Components;
 use SocialiteProviders\Live\Provider as MSLive;
 use Illuminate\Http\Request;
 
+/**
+ * Class MicrosoftLiveProvider
+ *
+ * @package DreamFactory\Core\OAuth\Components
+ */
 class MicrosoftLiveProvider extends MSLive
 {
     use DfOAuthTwoProvider;

@@ -4,6 +4,7 @@ namespace DreamFactory\Core\OAuth;
 use DreamFactory\Core\Components\ServiceDocBuilder;
 use DreamFactory\Core\Enums\ServiceTypeGroups;
 use DreamFactory\Core\OAuth\Models\OAuthConfig;
+use DreamFactory\Core\OAuth\Services\Bitbucket;
 use DreamFactory\Core\OAuth\Services\Facebook;
 use DreamFactory\Core\OAuth\Services\Github;
 use DreamFactory\Core\OAuth\Services\Google;
@@ -108,6 +109,21 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
                     },
                     'factory'         => function ($config) {
                         return new MicrosoftLive($config);
+                    },
+                ])
+            );
+            $df->addType(
+                new ServiceType([
+                    'name'            => 'oauth_bitbucket',
+                    'label'           => 'Bitbucket OAuth 1.0',
+                    'description'     => 'OAuth 1.0 service for supporting Bitbucket authentication and API access.',
+                    'group'           => ServiceTypeGroups::OAUTH,
+                    'config_handler'  => OAuthConfig::class,
+                    'default_api_doc' => function ($service) {
+                        return $this->buildServiceDoc($service->id, Bitbucket::getApiDocInfo($service));
+                    },
+                    'factory'         => function ($config) {
+                        return new Bitbucket($config);
                     },
                 ])
             );

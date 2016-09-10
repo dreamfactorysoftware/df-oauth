@@ -1,26 +1,20 @@
 <?php
-
 namespace DreamFactory\Core\OAuth\Components;
 
 use GuzzleHttp\Exception\BadResponseException;
-use League\OAuth1\Client\Server\Twitter as BaseServer;
+use SocialiteProviders\Twitter\Server as BaseServer;
 use League\OAuth1\Client\Credentials\TemporaryCredentials;
-use League\OAuth1\Client\Credentials\TokenCredentials;
-use SocialiteProviders\Manager\OAuth1\User;
 
+/**
+ * Class TwitterServer
+ *
+ * @package DreamFactory\Core\OAuth\Components
+ */
 class TwitterServer extends BaseServer
 {
 
     /**
-     * Retrieves token credentials by passing in the temporary credentials,
-     * the temporary credentials identifier as passed back by the server
-     * and finally the verifier code.
-     *
-     * @param TemporaryCredentials $temporaryCredentials
-     * @param string               $temporaryIdentifier
-     * @param string               $verifier
-     *
-     * @return array
+     * {@inheritdoc}
      */
     public function getTokenCredentials(TemporaryCredentials $temporaryCredentials, $temporaryIdentifier, $verifier)
     {
@@ -40,7 +34,7 @@ class TwitterServer extends BaseServer
 
         try {
             $response = $client->post($uri, [
-                'headers' => $headers,
+                'headers'     => $headers,
                 'form_params' => $bodyParameters,
             ]);
         } catch (BadResponseException $e) {
@@ -48,43 +42,8 @@ class TwitterServer extends BaseServer
         }
 
         return [
-            'tokenCredentials' => $this->createTokenCredentials((string) $response->getBody()),
+            'tokenCredentials'        => $this->createTokenCredentials((string)$response->getBody()),
             'credentialsResponseBody' => $response->getBody(),
         ];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function userDetails($data, TokenCredentials $tokenCredentials)
-    {
-        $user = new User();
-        $user->id = $data['id'];
-        $user->nickname = $data['screen_name'];
-        $user->name = $data['name'];
-        $user->location = $data['location'];
-        $user->description = $data['description'];
-        $user->avatar = $data['profile_image_url'];
-        $user->email = null;
-
-        if (isset($data['email'])) {
-            $user->email = $data['email'];
-        }
-
-        $used = ['id', 'screen_name', 'name', 'location', 'description', 'profile_image_url', 'email'];
-
-        foreach ($data as $key => $value) {
-            if (strpos($key, 'url') !== false) {
-                if (!in_array($key, $used)) {
-                    $used[] = $key;
-                }
-
-                $user->urls[$key] = $value;
-            }
-        }
-
-        $user->extra = array_diff_key($data, array_flip($used));
-
-        return $user;
     }
 }
