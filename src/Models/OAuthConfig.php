@@ -7,6 +7,7 @@ use DreamFactory\Core\Contracts\ServiceConfigHandlerInterface;
 use DreamFactory\Core\Models\BaseServiceConfigModel;
 use DreamFactory\Core\Models\Role;
 use DreamFactory\Core\Models\Service;
+use DreamFactory\Core\Models\AppRoleMap;
 
 /**
  * Class OAuthConfig
@@ -66,6 +67,17 @@ class OAuthConfig extends BaseServiceConfigModel implements ServiceConfigHandler
         }
 
         return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function getConfigSchema()
+    {
+        $schema = parent::getConfigSchema();
+        $schema[] = AppRoleMap::getConfigSchema();
+
+        return $schema;
     }
 
     /**
