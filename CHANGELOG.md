@@ -5,8 +5,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 ### Added
 - DF-833 Returning OAuth token after OAuth authentication.
+- DF-425 Allowing configurable role per app for open registration, OAuth, and AD/Ldap services.
 
 ### Changed
+- Promoted laravel socialite providers to 'socialiteproviders' classes.
 
 ### Fixed
 
