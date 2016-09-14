@@ -2,14 +2,14 @@
 namespace DreamFactory\Core\OAuth\Components;
 
 use Illuminate\Http\Request;
-use League\OAuth1\Client\Server\Twitter as TwitterServer;
+use SocialiteProviders\Twitter\Provider;
 
 /**
  * Class TwitterProvider
  *
  * @package DreamFactory\Core\OAuth\Components
  */
-class TwitterProvider extends \Laravel\Socialite\One\TwitterProvider
+class TwitterProvider extends Provider
 {
     use DfOAuthOneProvider;
 

@@ -1,21 +1,47 @@
 <?php
 namespace DreamFactory\Core\OAuth\Components;
 
-use League\OAuth1\Client\Credentials\TemporaryCredentials;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use League\OAuth1\Client\Server\Twitter as TwitterServer;
 
+/**
+ * Trait DfOAuthOneProvider
+ *
+ * @package DreamFactory\Core\OAuth\Components
+ */
 trait DfOAuthOneProvider
 {
+    /** @var  TwitterServer */
+    protected $server;
+
+    /** @var  \Request */
+    protected $request;
+
+    /** @var bool */
+    protected $stateless = true;
+
+    /** {@inheritdoc} */
+    protected function isStateless()
+    {
+        if (defined('SOCIALITEPROVIDERS_STATELESS')) {
+            return true;
+        }
+
+        return $this->stateless;
+    }
+
     /**
      * {@inheritdoc}
      */
     public function redirect()
     {
-        /** @type TemporaryCredentials $temp */
-        $temp = $this->server->getTemporaryCredentials();
-
-        $identifier = $temp->getIdentifier();
-        \Cache::put($identifier, $temp, 3);
+        if (!$this->isStateless()) {
+            $temp = $this->server->getTemporaryCredentials();
+            \Cache::put('oauth.temp', $temp, 3);
+        } else {
+            $temp = $this->server->getTemporaryCredentials();
+            \Cache::put('oauth_temp', serialize($temp), 3);
+        }
 
         return new RedirectResponse($this->server->getAuthorizationUrl($temp));
     }
@@ -25,11 +51,18 @@ trait DfOAuthOneProvider
      */
     protected function getToken()
     {
-        $key = $this->request->get('oauth_token');
-        $temp = \Cache::pull($key);
+        if (!$this->isStateless()) {
+            $temp = \Cache::pull('oauth.temp');
 
-        return $this->server->getTokenCredentials(
-            $temp, $this->request->get('oauth_token'), $this->request->get('oauth_verifier')
-        );
+            return $this->server->getTokenCredentials(
+                $temp, $this->request->get('oauth_token'), $this->request->get('oauth_verifier')
+            );
+        } else {
+            $temp = unserialize(\Cache::pull('oauth_temp'));
+
+            return $this->server->getTokenCredentials(
+                $temp, $this->request->get('oauth_token'), $this->request->get('oauth_verifier')
+            );
+        }
     }
 }

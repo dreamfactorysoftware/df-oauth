@@ -2,16 +2,36 @@
 namespace DreamFactory\Core\OAuth\Components;
 
 use Illuminate\Http\Request;
-use League\OAuth1\Client\Server\Bitbucket as BitbucketServer;
+use SocialiteProviders\Manager\OAuth1\AbstractProvider;
+use SocialiteProviders\Manager\OAuth1\User;
 
 /**
  * Class BitbucketProvider
  *
  * @package DreamFactory\Core\OAuth\Components
  */
-class BitbucketProvider extends \Laravel\Socialite\One\BitbucketProvider
+class BitbucketProvider extends AbstractProvider
 {
     use DfOAuthOneProvider;
+
+    /**
+     * Unique Provider Identifier.
+     */
+    const IDENTIFIER = 'BITBUCKET';
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function mapUserToObject(array $user)
+    {
+        return (new User())->setRaw($user['extra'])->map([
+            'id'       => $user['uid'],
+            'nickname' => $user['nickname'],
+            'name'     => $user['name'],
+            'email'    => $user['email'],
+            'avatar'   => $user['imageUrl'],
+        ]);
+    }
 
     /**
      * @param string $clientId

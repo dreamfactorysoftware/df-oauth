@@ -1,13 +1,11 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: arif
- * Date: 7/25/16
- * Time: 5:08 PM
- */
-
 namespace DreamFactory\Core\OAuth\Components;
 
+/**
+ * Class MicrosoftLiveIntProvider
+ *
+ * @package DreamFactory\Core\OAuth\Components
+ */
 class MicrosoftLiveIntProvider extends MicrosoftLiveProvider
 {
     protected $authUrl = null;
