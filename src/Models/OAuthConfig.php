@@ -2,7 +2,6 @@
 namespace DreamFactory\Core\OAuth\Models;
 
 use DreamFactory\Core\Exceptions\BadRequestException;
-use DreamFactory\Core\Contracts\ServiceConfigHandlerInterface;
 use DreamFactory\Core\Models\BaseServiceConfigModel;
 use DreamFactory\Core\Models\Role;
 use DreamFactory\Core\Models\Service;
@@ -12,7 +11,7 @@ use DreamFactory\Core\Models\Service;
  *
  * @package DreamFactory\Core\OAuth\Models
  */
-class OAuthConfig extends BaseServiceConfigModel implements ServiceConfigHandlerInterface
+class OAuthConfig extends BaseServiceConfigModel
 {
     protected $table = 'oauth_config';
 
@@ -27,6 +26,8 @@ class OAuthConfig extends BaseServiceConfigModel implements ServiceConfigHandler
     ];
 
     protected $encrypted = ['client_secret'];
+
+    protected $protected = ['client_secret'];
 
     protected $casts = [
         'service_id'        => 'integer',
