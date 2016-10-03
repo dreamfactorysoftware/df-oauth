@@ -12,7 +12,7 @@ class MicrosoftLive extends BaseOAuthService
     const PROVIDER_NAME = 'microsoft-live';
 
     /** @inheritdoc */
-    protected function setDriver($config)
+    protected function setProvider($config)
     {
         $clientId = array_get($config, 'client_id');
         $clientSecret = array_get($config, 'client_secret');
@@ -20,9 +20,9 @@ class MicrosoftLive extends BaseOAuthService
         $customProvider = array_get($config, 'custom_provider');
 
         if (!empty($customProvider) && boolval($customProvider) === true) {
-            $this->driver = new MicrosoftLiveIntProvider($clientId, $clientSecret, $redirectUrl);
+            $this->provider = new MicrosoftLiveIntProvider($clientId, $clientSecret, $redirectUrl);
         } else {
-            $this->driver = new MicrosoftLiveProvider($clientId, $clientSecret, $redirectUrl);
+            $this->provider = new MicrosoftLiveProvider($clientId, $clientSecret, $redirectUrl);
         }
     }
 

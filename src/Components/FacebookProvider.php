@@ -2,6 +2,7 @@
 namespace DreamFactory\Core\OAuth\Components;
 
 use Illuminate\Http\Request;
+use SocialiteProviders\Manager\OAuth2\User;
 
 /**
  * Class FacebookProvider
@@ -22,5 +23,22 @@ class FacebookProvider extends \Laravel\Socialite\Two\FacebookProvider
         /** @var Request $request */
         $request = \Request::instance();
         parent::__construct($request, $clientId, $clientSecret, $redirectUrl);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function mapUserToObject(array $user)
+    {
+        $avatarUrl = $this->graphUrl . '/' . $this->version . '/' . $user['id'] . '/picture';
+
+        return (new User)->setRaw($user)->map([
+            'id'              => $user['id'],
+            'nickname'        => null,
+            'name'            => array_get($user, 'name'),
+            'email'           => array_get($user, 'email'),
+            'avatar'          => $avatarUrl . '?type=normal',
+            'avatar_original' => $avatarUrl . '?width=1920',
+        ]);
     }
 }
