@@ -7,6 +7,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 ### Fixed
 
+## [0.6.0] - 2016-11-17
+- Dependency changes only
+
 ## [0.5.0] - 2016-10-03
 ### Added
 - DF-833 Returning OAuth token after OAuth authentication
@@ -50,7 +53,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 0.1.0 - 2015-10-24
 First official release working with the new [dreamfactory](https://github.com/dreamfactorysoftware/dreamfactory) project.
 
-[Unreleased]: https://github.com/dreamfactorysoftware/df-oauth/compare/0.5.0...HEAD
+[Unreleased]: https://github.com/dreamfactorysoftware/df-oauth/compare/0.6.0...HEAD
+[0.6.0]: https://github.com/dreamfactorysoftware/df-oauth/compare/0.5.0...0.6.0
 [0.5.0]: https://github.com/dreamfactorysoftware/df-oauth/compare/0.4.0...0.5.0
 [0.4.0]: https://github.com/dreamfactorysoftware/df-oauth/compare/0.3.1...0.4.0
 [0.3.1]: https://github.com/dreamfactorysoftware/df-oauth/compare/0.3.0...0.3.1
