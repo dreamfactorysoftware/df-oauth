@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 ### Added
 ### Changed
+- OAuth callback handler now checks for service name using state identifier when service name is not present on callback url.
+
 ### Fixed
 
 ## [0.6.0] - 2016-11-17

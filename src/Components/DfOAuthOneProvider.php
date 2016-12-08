@@ -1,6 +1,7 @@
 <?php
 namespace DreamFactory\Core\OAuth\Components;
 
+use League\OAuth1\Client\Credentials\TemporaryCredentials;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use League\OAuth1\Client\Server\Twitter as TwitterServer;
 
@@ -44,6 +45,23 @@ trait DfOAuthOneProvider
         }
 
         return new RedirectResponse($this->server->getAuthorizationUrl($temp));
+    }
+
+    /**
+     * Returns oauth token used in last authorization process.
+     *
+     * @return string
+     */
+    public function getOAuthToken()
+    {
+        if (!$this->isStateless()) {
+            return \Cache::get('oauth.temp');
+        } else {
+            /** @var TemporaryCredentials $temp */
+            $temp = unserialize(\Cache::get('oauth_temp'));
+
+            return $temp->getIdentifier();
+        }
     }
 
     /**

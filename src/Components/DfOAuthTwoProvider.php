@@ -16,6 +16,9 @@ trait DfOAuthTwoProvider
     /** @var  \Request */
     protected $request;
 
+    /** @var null|string */
+    protected $state = null;
+
     /** @var  array */
     protected $credentialsResponseBody;
 
@@ -39,10 +42,21 @@ trait DfOAuthTwoProvider
         $state = null;
         if ($this->usesState()) {
             $state = Str::random(40);
+            $this->state = $state;
             \Cache::put($state, $state, 3);
         }
 
         return new RedirectResponse($this->getAuthUrl($state));
+    }
+
+    /**
+     * Returns state identifier.
+     *
+     * @return null|string
+     */
+    public function getState()
+    {
+        return $this->state;
     }
 
     /**
