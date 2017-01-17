@@ -3,6 +3,8 @@ namespace DreamFactory\Core\OAuth\Services;
 
 use Carbon\Carbon;
 use DreamFactory\Core\Models\User;
+use DreamFactory\Core\OAuth\Components\DfOAuthOneProvider;
+use DreamFactory\Core\OAuth\Components\DfOAuthTwoProvider;
 use DreamFactory\Core\OAuth\Models\OAuthTokenMap;
 use DreamFactory\Core\Services\BaseRestService;
 use DreamFactory\Core\Utility\Session;
@@ -14,6 +16,8 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 
 abstract class BaseOAuthService extends BaseRestService
 {
+    const CACHE_KEY_PREFIX = 'oauth_';
+
     /**
      * OAuth service provider.
      *
@@ -35,7 +39,6 @@ abstract class BaseOAuthService extends BaseRestService
         $settings = (array)$settings;
         $settings['verbAliases'] = [
             Verbs::PUT   => Verbs::POST,
-            Verbs::MERGE => Verbs::PATCH
         ];
 
         parent::__construct($settings);
@@ -102,10 +105,26 @@ abstract class BaseOAuthService extends BaseRestService
     {
         /** @var RedirectResponse $response */
         $response = $this->provider->redirect();
+        $traitsUsed = class_uses($this->provider);
+        $traitTwo = DfOAuthTwoProvider::class;
+        $traitOne = DfOAuthOneProvider::class;
+        if (isset($traitsUsed[$traitTwo])) {
+            $state = $this->provider->getState();
+            if (!empty($state)) {
+                $key = static::CACHE_KEY_PREFIX . $state;
+                \Cache::put($key, $this->getName(), 3);
+            }
+        } elseif (isset($traitsUsed[$traitOne])) {
+            $token = $this->provider->getOAuthToken();
+            if (!empty($token)) {
+                $key = static::CACHE_KEY_PREFIX . $token;
+                \Cache::put($key, $this->getName(), 3);
+            }
+        }
+
         if (!$request->ajax()) {
             return $response;
         }
-
         $url = $response->getTargetUrl();
         $result = ['response' => ['redirect' => true, 'url' => $url]];
 

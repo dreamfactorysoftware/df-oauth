@@ -14,7 +14,7 @@ class MicrosoftLiveProvider extends MSLive
     use DfOAuthTwoProvider;
 
     /**
-     * @param Request $clientId
+     * @param string $clientId
      * @param string  $clientSecret
      * @param string  $redirectUrl
      */
