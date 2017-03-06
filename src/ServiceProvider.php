@@ -129,4 +129,10 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
             );
         });
     }
+
+    public function boot()
+    {
+        // add migrations
+        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+    }
 }
