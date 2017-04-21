@@ -197,6 +197,7 @@ abstract class BaseOAuthService extends BaseRestService
 
         if (empty($user)) {
             $data = [
+                'username'       => $email,
                 'name'           => $fullName,
                 'first_name'     => $firstName,
                 'last_name'      => $lastName,
