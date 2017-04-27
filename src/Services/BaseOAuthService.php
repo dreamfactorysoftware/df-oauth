@@ -8,7 +8,7 @@ use DreamFactory\Core\OAuth\Components\DfOAuthTwoProvider;
 use DreamFactory\Core\OAuth\Models\OAuthTokenMap;
 use DreamFactory\Core\Services\BaseRestService;
 use DreamFactory\Core\Utility\Session;
-use DreamFactory\Library\Utility\Enums\Verbs;
+use DreamFactory\Core\Enums\Verbs;
 use Illuminate\Http\Request;
 use Laravel\Socialite\Contracts\Provider;
 use Laravel\Socialite\Contracts\User as OAuthUserContract;
