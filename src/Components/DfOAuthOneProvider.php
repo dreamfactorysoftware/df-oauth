@@ -1,4 +1,5 @@
 <?php
+
 namespace DreamFactory\Core\OAuth\Components;
 
 use League\OAuth1\Client\Credentials\TemporaryCredentials;

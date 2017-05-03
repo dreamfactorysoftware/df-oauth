@@ -1,4 +1,5 @@
 <?php
+
 namespace DreamFactory\Core\OAuth\Components;
 
 use Illuminate\Support\Str;

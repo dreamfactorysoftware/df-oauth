@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Fixed
+- DF-1114 - Fixed OAuth issue with PHP 5.6
 
 ## [0.9.0] - 2017-04-21
 ### Changed
