@@ -1,4 +1,5 @@
 <?php
+
 namespace DreamFactory\Core\OAuth\Components;
 
 use League\OAuth1\Client\Credentials\TemporaryCredentials;
@@ -12,15 +13,6 @@ use League\OAuth1\Client\Server\Twitter as TwitterServer;
  */
 trait DfOAuthOneProvider
 {
-    /** @var  TwitterServer */
-    protected $server;
-
-    /** @var  \Request */
-    protected $request;
-
-    /** @var bool */
-    protected $stateless = true;
-
     /** {@inheritdoc} */
     protected function isStateless()
     {

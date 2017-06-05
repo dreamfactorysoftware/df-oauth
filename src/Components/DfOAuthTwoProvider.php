@@ -1,4 +1,5 @@
 <?php
+
 namespace DreamFactory\Core\OAuth\Components;
 
 use Illuminate\Support\Str;
@@ -13,14 +14,8 @@ use SocialiteProviders\Manager\OAuth2\User;
  */
 trait DfOAuthTwoProvider
 {
-    /** @var  \Request */
-    protected $request;
-
     /** @var null|string */
     protected $state = null;
-
-    /** @var  array */
-    protected $credentialsResponseBody;
 
     /** {@inheritdoc} */
     abstract protected function getUserByToken($token);
