@@ -197,7 +197,9 @@ abstract class BaseOAuthService extends BaseRestService
         Session::setUserInfoWithJWT($dfUser);
         $response = Session::getPublicInfo();
         $response['oauth_token'] = $token;
-        $response['token_response'] = $responseBody;
+        if (isset($responseBody['id_token'])) {
+            $response['id_token'] = $responseBody['id_token'];
+        }
 
         return $response;
     }
