@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- DF-1117 - Added SAML and OpenID Connect SSO support
 
 ## [0.10.0] - 2017-06-05
 ### Fixed

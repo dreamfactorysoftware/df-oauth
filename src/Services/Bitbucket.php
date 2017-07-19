@@ -1,4 +1,5 @@
 <?php
+
 namespace DreamFactory\Core\OAuth\Services;
 
 use DreamFactory\Core\OAuth\Components\BitbucketProvider;
@@ -9,6 +10,9 @@ class Bitbucket extends BaseOAuthService
      * OAuth service provider name.
      */
     const PROVIDER_NAME = 'bitbucket';
+
+    /** @type array Service Resources */
+    protected static $resources = [];
 
     /**
      * {@inheritdoc}
