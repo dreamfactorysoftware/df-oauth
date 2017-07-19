@@ -53,30 +53,27 @@ class SSO extends BaseRestResource
                     'description' => 'Content - OAuth token response',
                     'schema'      => [
                         'type'       => 'object',
+                        'required'   => ['access_token', 'token_type'],
                         'properties' => [
                             'access_token'  => [
                                 'type'        => 'string',
-                                'description' => '(Required) The access token issued by the authorization server.'
+                                'description' => 'The access token issued by the authorization server.'
                             ],
                             'token_type'    => [
                                 'type'        => 'string',
-                                'description' => '(Required) The type of the token. Typically Bearer.'
+                                'description' => 'The type of the token. Typically Bearer.'
                             ],
                             'expires_in'    => [
                                 'type'        => 'integer',
-                                'description' => '(Recommended) The lifetime in seconds of the access token.'
+                                'description' => 'The lifetime in seconds of the access token.'
                             ],
                             'refresh_token' => [
                                 'type'        => 'string',
-                                'description' => '(Optional) The refresh token, which can be used to obtain new access tokens.'
+                                'description' => 'The refresh token, which can be used to obtain new access tokens.'
                             ],
                             'scope'         => [
                                 'type'        => 'string',
                                 'description' => 'OPTIONAL, if identical to the scope requested by the client; otherwise, REQUIRED.'
-                            ],
-                            'id_token'      => [
-                                'type'        => 'string',
-                                'description' => 'User identification token. Required for OpenID Connect only.'
                             ],
                         ]
                     ],
@@ -101,17 +98,6 @@ class SSO extends BaseRestResource
                             'last_login_date' => ['type' => 'string'],
                             'host'            => ['type' => 'string'],
                             'oauth_token'     => ['type' => 'string'],
-                            'token_response'  => [
-                                'type'       => 'object',
-                                'properties' => [
-                                    'access_token'  => ['type' => 'string'],
-                                    'token_type'    => ['type' => 'string'],
-                                    'expires_in'    => ['type' => 'string'],
-                                    'refresh_token' => ['type' => 'string'],
-                                    'scope'         => ['type' => 'string'],
-                                    'id_token'      => ['type' => 'string'],
-                                ]
-                            ],
                         ]
                     ]
                 ],
