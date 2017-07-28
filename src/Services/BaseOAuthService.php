@@ -1,4 +1,5 @@
 <?php
+
 namespace DreamFactory\Core\OAuth\Services;
 
 use Carbon\Carbon;
@@ -13,10 +14,21 @@ use Illuminate\Http\Request;
 use Laravel\Socialite\Contracts\Provider;
 use Laravel\Socialite\Contracts\User as OAuthUserContract;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use DreamFactory\Core\OAuth\Resources\SSO;
+use DreamFactory\Core\Exceptions\InternalServerErrorException;
 
 abstract class BaseOAuthService extends BaseRestService
 {
     const CACHE_KEY_PREFIX = 'oauth_';
+
+    /** @type array Service Resources */
+    protected static $resources = [
+        SSO::RESOURCE_NAME => [
+            'name'       => SSO::RESOURCE_NAME,
+            'class_name' => SSO::class,
+            'label'      => 'Single Sign On'
+        ],
+    ];
 
     /**
      * OAuth service provider.
@@ -38,7 +50,7 @@ abstract class BaseOAuthService extends BaseRestService
     {
         $settings = (array)$settings;
         $settings['verbAliases'] = [
-            Verbs::PUT   => Verbs::POST,
+            Verbs::PUT => Verbs::POST,
         ];
 
         parent::__construct($settings);
@@ -46,6 +58,12 @@ abstract class BaseOAuthService extends BaseRestService
         $config = array_get($settings, 'config');
         $this->defaultRole = array_get($config, 'default_role');
         $this->setProvider($config);
+    }
+
+    /** @inheritdoc */
+    public function getResources($only_handlers = false)
+    {
+        return ($only_handlers) ? static::$resources : array_values(static::$resources);
     }
 
     /**
@@ -131,12 +149,29 @@ abstract class BaseOAuthService extends BaseRestService
         return $result;
     }
 
+    /**
+     * Handles OAuth callback
+     *
+     * @return array
+     */
     public function handleOAuthCallback()
     {
         $provider = $this->getProvider();
         /** @var OAuthUserContract $user */
         $user = $provider->user();
 
+        return $this->loginOAuthUser($user);
+    }
+
+    /**
+     * Logs in OAuth user
+     *
+     * @param \Laravel\Socialite\Contracts\User $user
+     *
+     * @return array
+     */
+    public function loginOAuthUser(OAuthUserContract $user)
+    {
         /** @noinspection PhpUndefinedFieldInspection */
         $responseBody = $user->accessTokenResponseBody;
         /** @noinspection PhpUndefinedFieldInspection */
@@ -162,6 +197,9 @@ abstract class BaseOAuthService extends BaseRestService
         Session::setUserInfoWithJWT($dfUser);
         $response = Session::getPublicInfo();
         $response['oauth_token'] = $token;
+        if (isset($responseBody['id_token'])) {
+            $response['id_token'] = $responseBody['id_token'];
+        }
 
         return $response;
     }
@@ -177,7 +215,7 @@ abstract class BaseOAuthService extends BaseRestService
      * @return User
      * @throws \Exception
      */
-    protected function createShadowOAuthUser(OAuthUserContract $OAuthUser)
+    public function createShadowOAuthUser(OAuthUserContract $OAuthUser)
     {
         $fullName = $OAuthUser->getName();
         @list($firstName, $lastName) = explode(' ', $fullName);
@@ -228,5 +266,38 @@ abstract class BaseOAuthService extends BaseRestService
     protected function getOAuthResponse()
     {
         return OAuthTokenMap::whereServiceId($this->id)->whereUserId(Session::getCurrentUserId())->value('response');
+    }
+
+    /** @inheritdoc */
+    public static function getApiDocInfo($service)
+    {
+        $base = parent::getApiDocInfo($service);
+
+        $apis = [];
+        $models = [];
+        foreach (static::$resources as $resourceInfo) {
+            $resourceClass = array_get($resourceInfo, 'class_name');
+
+            if (!class_exists($resourceClass)) {
+                throw new InternalServerErrorException('Service configuration class name lookup failed for resource ' .
+                    $resourceClass);
+            }
+
+            $resourceName = array_get($resourceInfo, static::RESOURCE_IDENTIFIER);
+            if (Session::checkForAnyServicePermissions($service->name, $resourceName)) {
+                $results = $resourceClass::getApiDocInfo($service->name, $resourceInfo);
+                if (isset($results, $results['paths'])) {
+                    $apis = array_merge($apis, $results['paths']);
+                }
+                if (isset($results, $results['definitions'])) {
+                    $models = array_merge($models, $results['definitions']);
+                }
+            }
+        }
+
+        $base['paths'] = array_merge($base['paths'], $apis);
+        $base['definitions'] = array_merge($base['definitions'], $models);
+
+        return $base;
     }
 }

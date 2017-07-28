@@ -79,6 +79,18 @@ trait DfOAuthTwoProvider
 
         $response = $this->getAccessTokenResponse($this->getCode());
 
+        return $this->getUserFromTokenResponse($response);
+    }
+
+    /**
+     * Retrieve user using token response.
+     *
+     * @param $response
+     *
+     * @return $this
+     */
+    public function getUserFromTokenResponse($response)
+    {
         $user = $this->mapUserToObject($this->getUserByToken(
             $token = $this->parseAccessToken($response)
         ));
