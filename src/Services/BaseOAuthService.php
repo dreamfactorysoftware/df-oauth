@@ -60,12 +60,6 @@ abstract class BaseOAuthService extends BaseRestService
         $this->setProvider($config);
     }
 
-    /** @inheritdoc */
-    public function getResources($only_handlers = false)
-    {
-        return ($only_handlers) ? static::$resources : array_values(static::$resources);
-    }
-
     /**
      * Sets the OAuth service provider.
      *
@@ -90,16 +84,6 @@ abstract class BaseOAuthService extends BaseRestService
     public function getProvider()
     {
         return $this->provider;
-    }
-
-    /**
-     * Returns the service name.
-     *
-     * @return string
-     */
-    public function getName()
-    {
-        return $this->name;
     }
 
     /**
