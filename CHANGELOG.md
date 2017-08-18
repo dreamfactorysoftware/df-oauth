@@ -4,6 +4,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.12.0] - 2017-08-17
+### Changed
+- Reworked API doc usage and generation
+
 ## [0.11.0] - 2017-07-27
 ### Added
 - DF-1117 - Added SAML and OpenID Connect SSO support
@@ -73,7 +77,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 0.1.0 - 2015-10-24
 First official release working with the new [dreamfactory](https://github.com/dreamfactorysoftware/dreamfactory) project.
 
-[Unreleased]: https://github.com/dreamfactorysoftware/df-oauth/compare/0.11.0...HEAD
+[Unreleased]: https://github.com/dreamfactorysoftware/df-oauth/compare/0.12.0...HEAD
+[0.12.0]: https://github.com/dreamfactorysoftware/df-oauth/compare/0.11.0...0.12.0
 [0.11.0]: https://github.com/dreamfactorysoftware/df-oauth/compare/0.10.0...0.11.0
 [0.10.0]: https://github.com/dreamfactorysoftware/df-oauth/compare/0.9.0...0.10.0
 [0.9.0]: https://github.com/dreamfactorysoftware/df-oauth/compare/0.8.0...0.9.0
