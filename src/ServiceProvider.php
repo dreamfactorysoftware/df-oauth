@@ -1,7 +1,6 @@
 <?php
 namespace DreamFactory\Core\OAuth;
 
-use DreamFactory\Core\Components\ServiceDocBuilder;
 use DreamFactory\Core\Enums\ServiceTypeGroups;
 use DreamFactory\Core\OAuth\Models\OAuthConfig;
 use DreamFactory\Core\OAuth\Services\Bitbucket;
@@ -16,8 +15,6 @@ use DreamFactory\Core\Services\ServiceType;
 
 class ServiceProvider extends \Illuminate\Support\ServiceProvider
 {
-    use ServiceDocBuilder;
-
     public function register()
     {
         // Add our service types.
@@ -29,9 +26,6 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
                     'description'     => 'OAuth service for supporting Facebook authentication and API access.',
                     'group'           => ServiceTypeGroups::OAUTH,
                     'config_handler'  => OAuthConfig::class,
-                    'default_api_doc' => function ($service) {
-                        return $this->buildServiceDoc($service->id, Facebook::getApiDocInfo($service));
-                    },
                     'factory'         => function ($config) {
                         return new Facebook($config);
                     },
@@ -44,9 +38,6 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
                     'description'     => 'OAuth service for supporting Twitter authentication and API access.',
                     'group'           => ServiceTypeGroups::OAUTH,
                     'config_handler'  => OAuthConfig::class,
-                    'default_api_doc' => function ($service) {
-                        return $this->buildServiceDoc($service->id, Twitter::getApiDocInfo($service));
-                    },
                     'factory'         => function ($config) {
                         return new Twitter($config);
                     },
@@ -59,9 +50,6 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
                     'description'     => 'OAuth service for supporting GitHub authentication and API access.',
                     'group'           => ServiceTypeGroups::OAUTH,
                     'config_handler'  => OAuthConfig::class,
-                    'default_api_doc' => function ($service) {
-                        return $this->buildServiceDoc($service->id, Github::getApiDocInfo($service));
-                    },
                     'factory'         => function ($config) {
                         return new Github($config);
                     },
@@ -74,9 +62,6 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
                     'description'     => 'OAuth service for supporting Google authentication and API access.',
                     'group'           => ServiceTypeGroups::OAUTH,
                     'config_handler'  => OAuthConfig::class,
-                    'default_api_doc' => function ($service) {
-                        return $this->buildServiceDoc($service->id, Google::getApiDocInfo($service));
-                    },
                     'factory'         => function ($config) {
                         return new Google($config);
                     },
@@ -89,9 +74,6 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
                     'description'     => 'OAuth service for supporting LinkedIn authentication and API access.',
                     'group'           => ServiceTypeGroups::OAUTH,
                     'config_handler'  => OAuthConfig::class,
-                    'default_api_doc' => function ($service) {
-                        return $this->buildServiceDoc($service->id, LinkedIn::getApiDocInfo($service));
-                    },
                     'factory'         => function ($config) {
                         return new LinkedIn($config);
                     },
@@ -104,9 +86,6 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
                     'description'     => 'OAuth service for supporting Microsoft Live authentication and API access.',
                     'group'           => ServiceTypeGroups::OAUTH,
                     'config_handler'  => OAuthConfig::class,
-                    'default_api_doc' => function ($service) {
-                        return $this->buildServiceDoc($service->id, MicrosoftLive::getApiDocInfo($service));
-                    },
                     'factory'         => function ($config) {
                         return new MicrosoftLive($config);
                     },
@@ -119,9 +98,6 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
                     'description'     => 'OAuth 1.0 service for supporting Bitbucket authentication and API access.',
                     'group'           => ServiceTypeGroups::OAUTH,
                     'config_handler'  => OAuthConfig::class,
-                    'default_api_doc' => function ($service) {
-                        return $this->buildServiceDoc($service->id, Bitbucket::getApiDocInfo($service));
-                    },
                     'factory'         => function ($config) {
                         return new Bitbucket($config);
                     },
