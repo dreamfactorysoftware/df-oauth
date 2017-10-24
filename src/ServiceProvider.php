@@ -29,6 +29,12 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
                     'factory'         => function ($config) {
                         return new Facebook($config);
                     },
+                    'access_exceptions' => [
+                        [
+                            'verb_mask' => 2,
+                            'resource'  => 'sso',
+                        ]
+                    ],
                 ])
             );
             $df->addType(
@@ -53,6 +59,12 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
                     'factory'         => function ($config) {
                         return new Github($config);
                     },
+                    'access_exceptions' => [
+                        [
+                            'verb_mask' => 2,
+                            'resource'  => 'sso',
+                        ]
+                    ],
                 ])
             );
             $df->addType(
@@ -65,6 +77,12 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
                     'factory'         => function ($config) {
                         return new Google($config);
                     },
+                    'access_exceptions' => [
+                        [
+                            'verb_mask' => 2,
+                            'resource'  => 'sso',
+                        ]
+                    ],
                 ])
             );
             $df->addType(
@@ -77,6 +95,12 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
                     'factory'         => function ($config) {
                         return new LinkedIn($config);
                     },
+                    'access_exceptions' => [
+                        [
+                            'verb_mask' => 2,
+                            'resource'  => 'sso',
+                        ]
+                    ],
                 ])
             );
             $df->addType(
@@ -89,6 +113,12 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
                     'factory'         => function ($config) {
                         return new MicrosoftLive($config);
                     },
+                    'access_exceptions' => [
+                        [
+                            'verb_mask' => 2,
+                            'resource'  => 'sso',
+                        ]
+                    ],
                 ])
             );
             $df->addType(
