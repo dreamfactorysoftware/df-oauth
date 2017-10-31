@@ -36,11 +36,15 @@ class SSO extends BaseRestResource
     {
         $resourceName = strtolower($this->name);
         $path = '/' . $resourceName;
+        $service = $this->getServiceName();
+        $capitalized = camelize($service);
+        $class = trim(strrchr(static::class, '\\'), '\\');
+
         $base = [
             $path => [
                 'post' => [
-                    'summary'     => 'performSSO() - Single Sign On',
-                    'operationId' => 'performSSO',
+                    'summary'     => 'perform' . $capitalized . $class . 'SSO() - Single Sign On',
+                    'operationId' => 'perform' . $capitalized . $class . 'SSO',
                     'description' => 'Performs Single Sign On using OAuth 2.0 access token',
                     'requestBody' => [
                         'description' => 'Content - OAuth token response',
