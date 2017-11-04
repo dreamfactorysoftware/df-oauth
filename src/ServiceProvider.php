@@ -1,4 +1,5 @@
 <?php
+
 namespace DreamFactory\Core\OAuth;
 
 use DreamFactory\Core\Enums\ServiceTypeGroups;
@@ -21,86 +22,128 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
         $this->app->resolving('df.service', function (ServiceManager $df) {
             $df->addType(
                 new ServiceType([
-                    'name'            => 'oauth_facebook',
-                    'label'           => 'Facebook OAuth',
-                    'description'     => 'OAuth service for supporting Facebook authentication and API access.',
-                    'group'           => ServiceTypeGroups::OAUTH,
-                    'config_handler'  => OAuthConfig::class,
-                    'factory'         => function ($config) {
+                    'name'              => 'oauth_facebook',
+                    'label'             => 'Facebook OAuth',
+                    'description'       => 'OAuth service for supporting Facebook authentication and API access.',
+                    'group'             => ServiceTypeGroups::OAUTH,
+                    'config_handler'    => OAuthConfig::class,
+                    'factory'           => function ($config) {
                         return new Facebook($config);
                     },
+                    'access_exceptions' => [
+                        [
+                            'verb_mask' => 2,
+                            'resource'  => 'sso',
+                        ],
+                    ],
                 ])
             );
             $df->addType(
                 new ServiceType([
-                    'name'            => 'oauth_twitter',
-                    'label'           => 'Twitter OAuth',
-                    'description'     => 'OAuth service for supporting Twitter authentication and API access.',
-                    'group'           => ServiceTypeGroups::OAUTH,
-                    'config_handler'  => OAuthConfig::class,
-                    'factory'         => function ($config) {
+                    'name'              => 'oauth_twitter',
+                    'label'             => 'Twitter OAuth',
+                    'description'       => 'OAuth service for supporting Twitter authentication and API access.',
+                    'group'             => ServiceTypeGroups::OAUTH,
+                    'config_handler'    => OAuthConfig::class,
+                    'factory'           => function ($config) {
                         return new Twitter($config);
                     },
+                    'access_exceptions' => [
+                        [
+                            'verb_mask' => 2,
+                            'resource'  => 'sso',
+                        ],
+                    ],
                 ])
             );
             $df->addType(
                 new ServiceType([
-                    'name'            => 'oauth_github',
-                    'label'           => 'GitHub OAuth',
-                    'description'     => 'OAuth service for supporting GitHub authentication and API access.',
-                    'group'           => ServiceTypeGroups::OAUTH,
-                    'config_handler'  => OAuthConfig::class,
-                    'factory'         => function ($config) {
+                    'name'              => 'oauth_github',
+                    'label'             => 'GitHub OAuth',
+                    'description'       => 'OAuth service for supporting GitHub authentication and API access.',
+                    'group'             => ServiceTypeGroups::OAUTH,
+                    'config_handler'    => OAuthConfig::class,
+                    'factory'           => function ($config) {
                         return new Github($config);
                     },
+                    'access_exceptions' => [
+                        [
+                            'verb_mask' => 2,
+                            'resource'  => 'sso',
+                        ],
+                    ],
                 ])
             );
             $df->addType(
                 new ServiceType([
-                    'name'            => 'oauth_google',
-                    'label'           => 'Google OAuth',
-                    'description'     => 'OAuth service for supporting Google authentication and API access.',
-                    'group'           => ServiceTypeGroups::OAUTH,
-                    'config_handler'  => OAuthConfig::class,
-                    'factory'         => function ($config) {
+                    'name'              => 'oauth_google',
+                    'label'             => 'Google OAuth',
+                    'description'       => 'OAuth service for supporting Google authentication and API access.',
+                    'group'             => ServiceTypeGroups::OAUTH,
+                    'config_handler'    => OAuthConfig::class,
+                    'factory'           => function ($config) {
                         return new Google($config);
                     },
+                    'access_exceptions' => [
+                        [
+                            'verb_mask' => 2,
+                            'resource'  => 'sso',
+                        ],
+                    ],
                 ])
             );
             $df->addType(
                 new ServiceType([
-                    'name'            => 'oauth_linkedin',
-                    'label'           => 'LinkedIn OAuth',
-                    'description'     => 'OAuth service for supporting LinkedIn authentication and API access.',
-                    'group'           => ServiceTypeGroups::OAUTH,
-                    'config_handler'  => OAuthConfig::class,
-                    'factory'         => function ($config) {
+                    'name'              => 'oauth_linkedin',
+                    'label'             => 'LinkedIn OAuth',
+                    'description'       => 'OAuth service for supporting LinkedIn authentication and API access.',
+                    'group'             => ServiceTypeGroups::OAUTH,
+                    'config_handler'    => OAuthConfig::class,
+                    'factory'           => function ($config) {
                         return new LinkedIn($config);
                     },
+                    'access_exceptions' => [
+                        [
+                            'verb_mask' => 2,
+                            'resource'  => 'sso',
+                        ],
+                    ],
                 ])
             );
             $df->addType(
                 new ServiceType([
-                    'name'            => 'oauth_microsoft-live',
-                    'label'           => 'Microsoft Live OAuth',
-                    'description'     => 'OAuth service for supporting Microsoft Live authentication and API access.',
-                    'group'           => ServiceTypeGroups::OAUTH,
-                    'config_handler'  => OAuthConfig::class,
-                    'factory'         => function ($config) {
+                    'name'              => 'oauth_microsoft-live',
+                    'label'             => 'Microsoft Live OAuth',
+                    'description'       => 'OAuth service for supporting Microsoft Live authentication and API access.',
+                    'group'             => ServiceTypeGroups::OAUTH,
+                    'config_handler'    => OAuthConfig::class,
+                    'factory'           => function ($config) {
                         return new MicrosoftLive($config);
                     },
+                    'access_exceptions' => [
+                        [
+                            'verb_mask' => 2,
+                            'resource'  => 'sso',
+                        ],
+                    ],
                 ])
             );
             $df->addType(
                 new ServiceType([
-                    'name'            => 'oauth_bitbucket',
-                    'label'           => 'Bitbucket OAuth',
-                    'description'     => 'OAuth 1.0 service for supporting Bitbucket authentication and API access.',
-                    'group'           => ServiceTypeGroups::OAUTH,
-                    'config_handler'  => OAuthConfig::class,
-                    'factory'         => function ($config) {
+                    'name'              => 'oauth_bitbucket',
+                    'label'             => 'Bitbucket OAuth',
+                    'description'       => 'OAuth 1.0 service for supporting Bitbucket authentication and API access.',
+                    'group'             => ServiceTypeGroups::OAUTH,
+                    'config_handler'    => OAuthConfig::class,
+                    'factory'           => function ($config) {
                         return new Bitbucket($config);
                     },
+                    'access_exceptions' => [
+                        [
+                            'verb_mask' => 2,
+                            'resource'  => 'sso',
+                        ],
+                    ],
                 ])
             );
         });
