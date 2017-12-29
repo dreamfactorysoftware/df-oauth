@@ -20,13 +20,13 @@
     }
   ],
   "support":     {
-    "email":  "support@dreamfactory.com",
+    "email":  "dspsupport@dreamfactory.com",
     "source": "https://github.com/dreamfactorysoftware/df-oauth",
     "issues": "https://github.com/dreamfactorysoftware/df-oauth/issues",
     "wiki":   "https://wiki.dreamfactory.com"
   },
   "require":     {
-    "dreamfactory/df-core":              "~0.13.0",
+    "dreamfactory/df-core":              "~0.14.0",
     "laravel/socialite":                 "~2.0",
     "socialiteproviders/microsoft-live": "^2.0",
     "socialiteproviders/twitter":        "^2.0"
@@ -38,7 +38,12 @@
   },
   "extra":       {
     "branch-alias": {
-      "dev-develop": "0.13.x-dev"
+      "dev-develop": "0.14.x-dev"
+    },
+    "laravel": {
+      "providers": [
+        "DreamFactory\\Core\\OAuth\\ServiceProvider"
+      ]
     }
   }
 }
