@@ -29,10 +29,7 @@ class GoogleProvider extends \Laravel\Socialite\Two\GoogleProvider
      * {@inheritdoc}
      */
     protected function mapUserToObject(array $user)
-    {
-        print_r("++++++++++++++++++SPLessons++++++++++++++++++");
-        print_r($user, true);
-        print_r("++++++++++++++++++SPLessons++++++++++++++++++");
+    {        
         return (new User)->setRaw($user)->map([
             'id'       => $user['id'],
             'nickname' => array_get($user, 'nickname'),
