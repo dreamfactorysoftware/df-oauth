@@ -210,10 +210,11 @@ abstract class BaseOAuthService extends BaseRestService
 
         if (empty($email)) {
             $email = $OAuthUser->getId() . '+' . $serviceName . '@' . $serviceName . '.com';
-        } else {
-            list($emailId, $domain) = explode('@', $email);
-            $email = $emailId . '+' . $serviceName . '@' . $domain;
-        }
+        } 
+        // else {
+        //     list($emailId, $domain) = explode('@', $email);
+        //     $email = $emailId . '+' . $serviceName . '@' . $domain;
+        // }
 
         $user = User::whereEmail($email)->first();
 
