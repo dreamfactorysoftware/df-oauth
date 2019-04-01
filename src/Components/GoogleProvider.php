@@ -30,13 +30,13 @@ class GoogleProvider extends \Laravel\Socialite\Two\GoogleProvider
      */
     protected function mapUserToObject(array $user)
     {
-        $avatarUrl = Arr::get($user, 'picture');
+        $avatarUrl = array_get($user, 'picture');
 
         return (new User)->setRaw($user)->map([
-            'id' => Arr::get($user, 'id'),
-            'nickname' => Arr::get($user, 'nickname'),
-            'name' => Arr::get($user, 'name'),
-            'email' => Arr::get($user, 'email'),
+            'id' => array_get($user, 'id'),
+            'nickname' => array_get($user, 'nickname'),
+            'name' => array_get($user, 'name'),
+            'email' => array_get($user, 'email'),
             'avatar' => $avatarUrl,
             'avatar_original' => preg_replace('/\?sz=([0-9]+)/', '', $avatarUrl),
         ]);
