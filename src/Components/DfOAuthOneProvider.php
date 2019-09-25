@@ -30,10 +30,10 @@ trait DfOAuthOneProvider
     {
         if (!$this->isStateless()) {
             $temp = $this->server->getTemporaryCredentials();
-            \Cache::put('oauth.temp', $temp, 3);
+            \Cache::put('oauth.temp', $temp, 180);
         } else {
             $temp = $this->server->getTemporaryCredentials();
-            \Cache::put('oauth_temp', serialize($temp), 3);
+            \Cache::put('oauth_temp', serialize($temp), 180);
         }
 
         return new RedirectResponse($this->server->getAuthorizationUrl($temp));

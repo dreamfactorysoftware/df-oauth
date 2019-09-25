@@ -114,13 +114,13 @@ abstract class BaseOAuthService extends BaseRestService
             $state = $this->provider->getState();
             if (!empty($state)) {
                 $key = static::CACHE_KEY_PREFIX . $state;
-                \Cache::put($key, $this->getName(), 3);
+                \Cache::put($key, $this->getName(), 180);
             }
         } elseif (isset($traitsUsed[$traitOne])) {
             $token = $this->provider->getOAuthToken();
             if (!empty($token)) {
                 $key = static::CACHE_KEY_PREFIX . $token;
-                \Cache::put($key, $this->getName(), 3);
+                \Cache::put($key, $this->getName(), 180);
             }
         }
 

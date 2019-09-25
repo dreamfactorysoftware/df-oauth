@@ -38,7 +38,7 @@ trait DfOAuthTwoProvider
         if ($this->usesState()) {
             $state = Str::random(40);
             $this->state = $state;
-            \Cache::put($state, $state, 3);
+            \Cache::put($state, $state, 180);
         }
 
         return new RedirectResponse($this->getAuthUrl($state));
