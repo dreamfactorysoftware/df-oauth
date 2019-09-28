@@ -27,7 +27,7 @@
   },
   "require":     {
     "dreamfactory/df-core":              "dev-laravel-upgrade",
-    "laravel/socialite":                 "~2.0",
+    "laravel/socialite":                 "~2.0|~4.2",
     "socialiteproviders/microsoft-live": "^2.0",
     "socialiteproviders/twitter":        "^2.0"
   },
