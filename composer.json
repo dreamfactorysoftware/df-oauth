@@ -25,6 +25,8 @@
     "issues": "https://github.com/dreamfactorysoftware/df-oauth/issues",
     "wiki":   "https://wiki.dreamfactory.com"
   },
+  "minimum-stability": "dev",
+  "prefer-stable":     true,
   "require":     {
     "dreamfactory/df-core":              "~0.15.1",
     "laravel/socialite":                 "~2.0",
