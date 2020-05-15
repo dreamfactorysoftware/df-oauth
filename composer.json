@@ -28,7 +28,7 @@
   "minimum-stability": "dev",
   "prefer-stable":     true,
   "require":     {
-    "dreamfactory/df-core":              "~0.21",
+    "dreamfactory/df-core":              "~0.22",
     "laravel/socialite":                 "~2.0|~4.2",
     "socialiteproviders/microsoft-live": "^2.0|^3.0",
     "socialiteproviders/twitter":        "^2.0|^3.0"
