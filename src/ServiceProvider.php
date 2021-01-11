@@ -3,11 +3,13 @@
 namespace DreamFactory\Core\OAuth;
 
 use DreamFactory\Core\Enums\ServiceTypeGroups;
+use DreamFactory\Core\OAuth\Models\HerokuAddonSSOConfig;
 use DreamFactory\Core\OAuth\Models\OAuthConfig;
 use DreamFactory\Core\OAuth\Services\Bitbucket;
 use DreamFactory\Core\OAuth\Services\Facebook;
 use DreamFactory\Core\OAuth\Services\Github;
 use DreamFactory\Core\OAuth\Services\Google;
+use DreamFactory\Core\OAuth\Services\HerokuAddonSSOService;
 use DreamFactory\Core\OAuth\Services\LinkedIn;
 use DreamFactory\Core\OAuth\Services\MicrosoftLive;
 use DreamFactory\Core\OAuth\Services\Twitter;
@@ -137,6 +139,26 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
                     'config_handler'    => OAuthConfig::class,
                     'factory'           => function ($config) {
                         return new Bitbucket($config);
+                    },
+                    'access_exceptions' => [
+                        [
+                            'verb_mask' => 2,
+                            'resource'  => 'sso',
+                        ],
+                    ],
+                ])
+            );
+
+            $df->addType(
+                new ServiceType([
+                    'name'              => 'heroku_addon_sso',
+                    'label'             => 'Heroku Add-on SSO',
+                    'description'       => 'Heroku Add-on SSO service for supporting Heroku Add-on Single Sign-on.',
+                    'group'             => ServiceTypeGroups::SSO,
+                    'singleton'         => true,
+                    'config_handler'    => HerokuAddonSSOConfig::class,
+                    'factory'           => function ($config) {
+                        return new HerokuAddonSSOService($config);
                     },
                     'access_exceptions' => [
                         [
