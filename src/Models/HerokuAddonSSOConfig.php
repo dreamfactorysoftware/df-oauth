@@ -56,10 +56,13 @@ class HerokuAddonSSOConfig extends BaseServiceConfigModel
                 $schema['type'] = 'string';
                 break;
             case 'secret_type':
-                $schema['label'] = 'Secret as a file?';
-                $schema['description'] = 'Use a secret field as a path to a secret file?';
+                $schema['label'] = 'Secret type?';
+                $schema['description'] = 'Define how to use secret value';
                 $schema['type'] = 'picklist';
-                $schema['values'] = HerokuAddonSecretType::all();
+                $schema['values'] = array_map(
+                    function($k, $v) {return ['label' => $k, 'name' => $v];},
+                    array_keys(HerokuAddonSecretType::all()), HerokuAddonSecretType::all()
+                );
                 break;
         }
     }

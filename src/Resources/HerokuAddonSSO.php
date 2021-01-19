@@ -42,7 +42,7 @@ class HerokuAddonSSO extends BaseRestResource
         $service = $this->getServiceName();
         $capitalized = camelize($service);
 
-        $base = [
+        return [
             $path => [
                 'post' => [
                     'summary' => 'Single Sign On',
@@ -55,9 +55,11 @@ class HerokuAddonSSO extends BaseRestResource
                                 'schema' => [
                                     'type' => 'object',
                                     'required' => [
-                                        'token',
+                                        'resource_token',
                                         'resource_id',
                                         'timestamp',
+                                        'email',
+                                        'user_id',
                                     ],
                                     'properties' => [
                                         'email' => [
@@ -75,15 +77,6 @@ class HerokuAddonSSO extends BaseRestResource
                                         'timestamp' => [
                                             'type' => 'string',
                                         ],
-                                        'nav-data' => [
-                                            'type' => 'string',
-                                        ],
-                                        'id' => [
-                                            'type' => 'string',
-                                        ],
-                                        'token' => [
-                                            'type' => 'string',
-                                        ],
                                         'resource_id' => [
                                             'type' => 'string',
                                         ],
@@ -98,7 +91,7 @@ class HerokuAddonSSO extends BaseRestResource
                     ],
                     'responses' => [
                         '304' => [
-                            'description' => 'Successful login',
+                            'description' => 'Successful login. If you use a proxy, make sure that redirects are disabled for proxy.',
                             'headers' => [
                                 'Location' => [
                                     'schema' => [
@@ -124,7 +117,5 @@ class HerokuAddonSSO extends BaseRestResource
                 ],
             ],
         ];
-
-        return $base;
     }
 }

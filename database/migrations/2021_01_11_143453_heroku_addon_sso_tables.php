@@ -4,7 +4,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\Schema;
 
-class HerokuAddonSSOTable extends Migration
+class HerokuAddonSSOTables extends Migration
 {
     /**
      * Run the migrations.
@@ -23,6 +23,16 @@ class HerokuAddonSSOTable extends Migration
                 $t->string('secret_type')->default('string');
             }
         );
+        Schema::create(
+            'heroku_users_map',
+            function (Blueprint $t){
+                $t->integer('user_id')->index();
+                $t->foreign('user_id')->references('id')->on('user')->onDelete('cascade');
+                $t->uuid('heroku_user_id');
+                $t->dateTime('updated_at');
+                $t->dateTime('created_at');
+            }
+        );
     }
 
     /**
@@ -33,5 +43,6 @@ class HerokuAddonSSOTable extends Migration
     public function down()
     {
         Schema::dropIfExists('heroku_addon_sso');
+        Schema::dropIfExists('heroku_users_map');
     }
 }
