@@ -3,6 +3,7 @@
 namespace DreamFactory\Core\OAuth;
 
 use DreamFactory\Core\Enums\ServiceTypeGroups;
+use DreamFactory\Core\OAuth\Commands\SetupHerokuSSO;
 use DreamFactory\Core\OAuth\Models\HerokuAddonSSOConfig;
 use DreamFactory\Core\OAuth\Models\OAuthConfig;
 use DreamFactory\Core\OAuth\Services\Bitbucket;
@@ -175,5 +176,9 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
     {
         // add migrations
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+
+        $this->commands([
+            SetupHerokuSSO::class,
+        ]);
     }
 }
