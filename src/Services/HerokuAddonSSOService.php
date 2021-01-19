@@ -5,6 +5,7 @@ namespace DreamFactory\Core\OAuth\Services;
 use Carbon\Carbon;
 use DreamFactory\Core\Exceptions\ForbiddenException;
 use DreamFactory\Core\Models\User;
+use DreamFactory\Core\OAuth\Models\HerokuAddonSecretType;
 use DreamFactory\Core\OAuth\Models\HerokuAddonUser;
 use DreamFactory\Core\OAuth\Resources\HerokuAddonSSO;
 use DreamFactory\Core\Services\BaseRestService;
@@ -97,10 +98,24 @@ class HerokuAddonSSOService extends BaseRestService
     private function checkToken($token, $timestamp, $resourceId)
     {
         /** @var HerokuAddonSSOService $service */
-        if ($this->getConfig('secret_as_file')) {
-            $secret = file_get_contents((string)$this->getConfig('secret'));
-        } else {
-            $secret = $this->getConfig('secret');
+        $secretType = $this->getConfig('secret_type');
+        switch ($secretType) {
+            case HerokuAddonSecretType::FILE: {
+                $secret = file_get_contents((string)$this->getConfig('secret'));
+                break;
+            }
+            case HerokuAddonSecretType::ENVIRONMENT: {
+                $secret = env((string)$this->getConfig('secret'));
+                break;
+            }
+            case HerokuAddonSecretType::STRING: {
+                $secret = $this->getConfig('secret');
+                break;
+            }
+            default: {
+                Log::error("Unsupported Heroku Add-on secret type: ${secretType}. Use " . HerokuAddonSecretType::STRING . " behavior.");
+                $secret = $this->getConfig('secret');
+            }
         }
         if (sha1("{$resourceId}:{$secret}:{$timestamp}") !== $token) {
             throw new ForbiddenException('Token invalid. Please provide valid token');
