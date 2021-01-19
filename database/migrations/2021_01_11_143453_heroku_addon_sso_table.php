@@ -20,7 +20,7 @@ class HerokuAddonSSOTable extends Migration
                 $t->integer('service_id')->unsigned()->index();
                 $t->foreign('service_id')->references('id')->on('service')->onDelete('cascade');
                 $t->string('secret');
-                $t->boolean('secret_as_file')->default(false);
+                $t->string('secret_type')->default('string');
             }
         );
     }

@@ -17,7 +17,7 @@ class HerokuAddonSSOConfig extends BaseServiceConfigModel
     protected $fillable = [
         'service_id',
         'secret',
-        'secret_as_file',
+        'secret_type',
     ];
 
     protected $encrypted = ['secret'];
@@ -27,7 +27,7 @@ class HerokuAddonSSOConfig extends BaseServiceConfigModel
     protected $casts = [
         'service_id' => 'integer',
         'secret' => 'string',
-        'secret_as_file' => 'boolean',
+        'secret_type' => 'string',
     ];
 
     protected $rules = [
@@ -55,10 +55,11 @@ class HerokuAddonSSOConfig extends BaseServiceConfigModel
                 $schema['description'] = 'Salt that will be used to verify the token';
                 $schema['type'] = 'string';
                 break;
-            case 'secret_as_file':
+            case 'secret_type':
                 $schema['label'] = 'Secret as a file?';
                 $schema['description'] = 'Use a secret field as a path to a secret file?';
-                $schema['type'] = 'boolean';
+                $schema['type'] = 'picklist';
+                $schema['values'] = HerokuAddonSecretType::all();
                 break;
         }
     }
