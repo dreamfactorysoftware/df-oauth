@@ -29,7 +29,7 @@ class HerokuAddonSSOTables extends Migration
             Schema::create(
                 'heroku_users_map',
                 function (Blueprint $t){
-                    $t->integer('user_id')->index();
+                    $t->unsignedInteger('user_id')->index();
                     $t->foreign('user_id')->references('id')->on('user')->onDelete('cascade');
                     $t->uuid('heroku_user_id');
                     $t->dateTime('updated_at');
