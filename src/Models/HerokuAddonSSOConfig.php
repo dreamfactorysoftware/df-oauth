@@ -56,7 +56,7 @@ class HerokuAddonSSOConfig extends BaseServiceConfigModel
                 $schema['type'] = 'string';
                 break;
             case 'secret_type':
-                $schema['label'] = 'Secret type?';
+                $schema['label'] = 'Secret type';
                 $schema['description'] = 'Define how to use secret value';
                 $schema['type'] = 'picklist';
                 $schema['values'] = array_map(

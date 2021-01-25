@@ -112,6 +112,13 @@ class SetupHerokuSSO extends Command
             $config = file_get_contents($config);
         }
         $result = json_decode($config, true);
-        return array_replace_recursive($result, $this->defaultConfig);
+        if ($result['type'] && $result['type'] !== $this->defaultConfig['type']) {
+            $this->warn('The parameter type is not supported');
+            $result['type'] = $this->defaultConfig['type'];
+        }
+        return array_replace_recursive(
+            $this->defaultConfig,
+            $result
+        );
     }
 }
