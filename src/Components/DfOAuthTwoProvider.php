@@ -3,7 +3,7 @@
 namespace DreamFactory\Core\OAuth\Components;
 
 use Illuminate\Support\Str;
-use Symfony\Component\HttpFoundation\RedirectResponse;
+use Illuminate\Http\RedirectResponse;
 use Laravel\Socialite\Two\InvalidStateException;
 use SocialiteProviders\Manager\OAuth2\User;
 
