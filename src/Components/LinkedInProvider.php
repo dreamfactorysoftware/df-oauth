@@ -3,6 +3,7 @@ namespace DreamFactory\Core\OAuth\Components;
 
 use Illuminate\Http\Request;
 use SocialiteProviders\Manager\OAuth2\User;
+use Illuminate\Support\Arr;
 
 /**
  * Class LinkedInProvider
@@ -33,10 +34,10 @@ class LinkedInProvider extends \Laravel\Socialite\Two\LinkedInProvider
         return (new User)->setRaw($user)->map([
             'id'              => $user['id'],
             'nickname'        => null,
-            'name'            => array_get($user, 'formattedName'),
-            'email'           => array_get($user, 'emailAddress'),
-            'avatar'          => array_get($user, 'pictureUrl'),
-            'avatar_original' => array_get($user, 'pictureUrls.values.0'),
+            'name'            => Arr::get($user, 'formattedName'),
+            'email'           => Arr::get($user, 'emailAddress'),
+            'avatar'          => Arr::get($user, 'pictureUrl'),
+            'avatar_original' => Arr::get($user, 'pictureUrls.values.0'),
         ]);
     }
 }

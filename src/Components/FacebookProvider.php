@@ -3,6 +3,7 @@ namespace DreamFactory\Core\OAuth\Components;
 
 use Illuminate\Http\Request;
 use SocialiteProviders\Manager\OAuth2\User;
+use Illuminate\Support\Arr;
 
 /**
  * Class FacebookProvider
@@ -35,8 +36,8 @@ class FacebookProvider extends \Laravel\Socialite\Two\FacebookProvider
         return (new User)->setRaw($user)->map([
             'id'              => $user['id'],
             'nickname'        => null,
-            'name'            => array_get($user, 'name'),
-            'email'           => array_get($user, 'email'),
+            'name'            => Arr::get($user, 'name'),
+            'email'           => Arr::get($user, 'email'),
             'avatar'          => $avatarUrl . '?type=normal',
             'avatar_original' => $avatarUrl . '?width=1920',
         ]);

@@ -16,6 +16,7 @@ use Laravel\Socialite\Contracts\User as OAuthUserContract;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use DreamFactory\Core\OAuth\Resources\SSO;
 use DreamFactory\Core\Exceptions\InternalServerErrorException;
+use Illuminate\Support\Arr;
 
 abstract class BaseOAuthService extends BaseRestService
 {
@@ -55,8 +56,8 @@ abstract class BaseOAuthService extends BaseRestService
 
         parent::__construct($settings);
 
-        $config = array_get($settings, 'config');
-        $this->defaultRole = array_get($config, 'default_role');
+        $config = Arr::get($settings, 'config');
+        $this->defaultRole = Arr::get($config, 'default_role');
         $this->setProvider($config);
     }
 

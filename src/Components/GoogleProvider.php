@@ -3,6 +3,7 @@ namespace DreamFactory\Core\OAuth\Components;
 
 use Illuminate\Http\Request;
 use SocialiteProviders\Manager\OAuth2\User;
+use Illuminate\Support\Arr;
 
 /**
  * Class GoogleProvider
@@ -30,13 +31,13 @@ class GoogleProvider extends \Laravel\Socialite\Two\GoogleProvider
      */
     protected function mapUserToObject(array $user)
     {
-        $avatarUrl = array_get($user, 'picture');
+        $avatarUrl = Arr::get($user, 'picture');
 
         return (new User)->setRaw($user)->map([
-            'id'       => array_get($user, 'id'),
-            'nickname' => array_get($user, 'nickname'),
-            'name' => array_get($user, 'name'),
-            'email' => array_get($user, 'email'),
+            'id'       => Arr::get($user, 'id'),
+            'nickname' => Arr::get($user, 'nickname'),
+            'name' => Arr::get($user, 'name'),
+            'email' => Arr::get($user, 'email'),
             'avatar' => $avatarUrl,
             'avatar_original' => preg_replace('/\?sz=([0-9]+)/', '', $avatarUrl),
         ]);

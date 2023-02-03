@@ -3,6 +3,7 @@
 namespace DreamFactory\Core\OAuth\Components;
 
 use Illuminate\Support\Str;
+use Illuminate\Support\Arr;
 use Illuminate\Http\RedirectResponse;
 use Laravel\Socialite\Two\InvalidStateException;
 use SocialiteProviders\Manager\OAuth2\User;
@@ -111,7 +112,7 @@ trait DfOAuthTwoProvider
      */
     protected function parseAccessToken($body)
     {
-        return array_get($body, 'access_token');
+        return Arr::get($body, 'access_token');
     }
 
     /**
@@ -119,7 +120,7 @@ trait DfOAuthTwoProvider
      */
     protected function parseRefreshToken($body)
     {
-        return array_get($body, 'refresh_token');
+        return Arr::get($body, 'refresh_token');
     }
 
     /**
@@ -127,6 +128,6 @@ trait DfOAuthTwoProvider
      */
     protected function parseExpiresIn($body)
     {
-        return array_get($body, 'expires_in');
+        return Arr::get($body, 'expires_in');
     }
 }
