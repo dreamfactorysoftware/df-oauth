@@ -2,6 +2,7 @@
 namespace DreamFactory\Core\OAuth\Services;
 
 use DreamFactory\Core\OAuth\Components\FacebookProvider;
+use Illuminate\Support\Arr;
 
 class Facebook extends BaseOAuthService
 {
@@ -15,9 +16,9 @@ class Facebook extends BaseOAuthService
      */
     protected function setProvider($config)
     {
-        $clientId = array_get($config, 'client_id');
-        $clientSecret = array_get($config, 'client_secret');
-        $redirectUrl = array_get($config, 'redirect_url');
+        $clientId = Arr::get($config, 'client_id');
+        $clientSecret = Arr::get($config, 'client_secret');
+        $redirectUrl = Arr::get($config, 'redirect_url');
 
         $this->provider = new FacebookProvider($clientId, $clientSecret, $redirectUrl);
     }

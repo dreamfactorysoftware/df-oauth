@@ -5,6 +5,7 @@ use DreamFactory\Core\Exceptions\BadRequestException;
 use DreamFactory\Core\Models\BaseModel;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Arr;
 
 /**
  * OAuthTokenMap
@@ -36,13 +37,13 @@ class OAuthTokenMap extends BaseModel
     public function validate($data, $throwException = true)
     {
         if (parent::validate($data)) {
-            $userId = array_get($data, 'user_id');
-            $serviceId = array_get($data, 'service_id');
+            $userId = Arr::get($data, 'user_id');
+            $serviceId = Arr::get($data, 'service_id');
 
             if ($userId && $serviceId) {
                 $model = $this->whereServiceId($serviceId)->whereUserId($userId)->first();
 
-                if (!empty($model) && $model->id != array_get($data, 'id')) {
+                if (!empty($model) && $model->id != Arr::get($data, 'id')) {
                     throw new BadRequestException('Only one user-service-token assignment allowed.');
                 }
             }
