@@ -10,11 +10,14 @@ use SocialiteProviders\Manager\OAuth2\User;
 use Log;
 
 /**
- * Trait DfOAuthTwoProvider
+ * Trait DfOAuthTwoOboProvider
  *
  * @package DreamFactory\Core\OAuth\Components
+ * 
+ * Implementation of Microsoft OAuth 2.0 On-Behalf-Of (OBO) flow
+ * https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-on-behalf-of-flow
  */
-trait DfOAuthTwoProvider
+trait DfOAuthTwoOboProvider
 {
     /** @var null|string */
     protected $state = null;
@@ -78,23 +81,19 @@ trait DfOAuthTwoProvider
         if ($this->hasInvalidState()) {
             throw new InvalidStateException();
         }
-        if(true){
-            $token_a_response = $this->getAccessTokenResponse($this->getCode());
-            Log::debug("[OAuth] Got response from Token A request: " . json_encode($token_a_response));
+        $token_a_response = $this->getAccessTokenResponse($this->getCode());
+        
+        $tokenA = $this->parseAccessToken($token_a_response);
+        if(empty($tokenA)) {
+            throw new \InvalidArgumentException('Recieved invalid access_token from initial OAuth oauth2/v2.0/token request.');
+        }else{
             // exchange OAuth access_token "Token A" for OBO access_token "Token B"
-            $tokenA = $this->parseAccessToken($token_a_response);
-            Log::debug("[OAuth] Token A: " . $tokenA);
-            if(empty($tokenA)) {
-                throw new \InvalidArgumentException('Recieved invalid access_token from initial OAuth /token request.');
-            }else{
-                $graph_response = $this->getGraphTokenResponse($tokenA);
-                Log::debug("[OAuth] Got response from Graph Token B request: " . json_encode($graph_response));
-                $user = $this->createUserFromGraphTokenResponse($graph_response);
+            // Need separate access_token for each Microsoft Entra API resource
+            $graph_token_response = $this->getGraphTokenResponse($tokenA);
+            $user = $this->createUserFromGraphTokenResponse($graph_token_response);
 
-                $obo_response = $this->getOBOTokenResponse($tokenA);
-                Log::debug("[OAuth] Got response from Snowflake Token B request: " . json_encode($obo_response));
-                return $this->setUserAccessTokenFromResponse($user, $obo_response);
-            }
+            $database_token_response = $this->getDatabaseTokenResponse($tokenA);
+            return $this->setUserAccessTokenFromResponse($user, $database_token_response);
         }
     }
     

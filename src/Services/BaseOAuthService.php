@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use DreamFactory\Core\Models\User;
 use DreamFactory\Core\OAuth\Components\DfOAuthOneProvider;
 use DreamFactory\Core\OAuth\Components\DfOAuthTwoProvider;
+use DreamFactory\Core\OAuth\Components\DfOAuthTwoOboProvider;
 use DreamFactory\Core\OAuth\Models\OAuthTokenMap;
 use DreamFactory\Core\Services\BaseRestService;
 use DreamFactory\Core\Utility\Session;
@@ -109,9 +110,10 @@ abstract class BaseOAuthService extends BaseRestService
         /** @var RedirectResponse $response */
         $response = $this->provider->redirect();
         $traitsUsed = class_uses($this->provider);
+        $traitTwoObo = DfOAuthTwoOboProvider::class;
         $traitTwo = DfOAuthTwoProvider::class;
         $traitOne = DfOAuthOneProvider::class;
-        if (isset($traitsUsed[$traitTwo])) {
+        if (isset($traitsUsed[$traitTwo]) || isset($traitsUsed[$traitTwoObo])) {
             $state = $this->provider->getState();
             if (!empty($state)) {
                 $key = static::CACHE_KEY_PREFIX . $state;
