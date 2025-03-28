@@ -3,6 +3,7 @@
 namespace DreamFactory\Core\OAuth\Resources;
 
 use DreamFactory\Core\Resources\BaseRestResource;
+use Log;
 
 class SSO extends BaseRestResource
 {
@@ -21,14 +22,48 @@ class SSO extends BaseRestResource
     }
 
     /** {@inheritdoc} */
-    protected function handlePOST()
+    protected function handleGET()
     {
-        $payload = $this->request->getPayloadData();
+        $code = $this->request->input('code');
+
+        if (!$code) {
+            Log::error('Missing OAuth code in callback');
+            return response()->json(['error' => 'OAuth code missing'], 400);
+        }
+
         /** @var $provider \DreamFactory\Core\OAuth\Components\DfOAuthTwoProvider */
         $provider = $this->getParent()->getProvider();
-        $user = $provider->getUserFromTokenResponse($payload);
 
-        return $this->getParent()->loginOAuthUser($user);
+        try {
+            Log::debug('Exchanging code for access token...');
+            $tokenResponse = $provider->getAccessTokenResponse($code);
+            Log::debug('Access Token Response:', $tokenResponse);
+
+            if (!isset($tokenResponse['access_token'])) {
+                throw new \Exception('Access token missing in response');
+            }
+
+            $accessToken = $tokenResponse['access_token'];
+            Log::debug("OAuth Access Token: $accessToken");
+
+            $user = $provider->getUserFromTokenResponse($tokenResponse);
+            Log::debug('OAuth User Object:', [
+                'name' => $user->getName(),
+                'nickname' => $user->getNickname(),
+                'email' => $user->getEmail(),
+            ]);
+
+            $result = $this->getParent()->loginOAuthUser($user);
+            return $this->respond()
+                ->setStatusCode(302)
+                ->setHeaders([
+                    'Location' => "/dreamfactory/dist/index.html#/auth/login?jwt=" . urlencode($result['session_token'] ?? ''),
+                ])
+                ->setContent(json_encode($result));
+        } catch (\Exception $e) {
+            Log::error('OAuth callback failed:', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'OAuth callback failed'], 500);
+        }
     }
 
     /** {@inheritdoc} */
@@ -41,7 +76,7 @@ class SSO extends BaseRestResource
 
         $base = [
             $path => [
-                'post' => [
+                'get' => [
                     'summary'     => 'Single Sign On',
                     'description' => 'Performs Single Sign On using OAuth 2.0 access token',
                     'operationId' => 'perform' . $capitalized . 'SSO',

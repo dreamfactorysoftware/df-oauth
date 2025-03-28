@@ -141,11 +141,20 @@ abstract class BaseOAuthService extends BaseRestService
      */
     public function handleOAuthCallback()
     {
-        $provider = $this->getProvider();
-        /** @var OAuthUserContract $user */
-        $user = $provider->user();
+        try {
+            $provider = $this->getProvider();
+            $user = $provider->user();
 
-        return $this->loginOAuthUser($user);
+            // Log full response for debugging
+            Log::debug('OAuth user response:', (array) $user);
+            Log::debug('Access Token:', ['token' => $user->token ?? 'N/A']);
+            Log::debug('Access Token Response Body:', (array) ($user->accessTokenResponseBody ?? []));
+
+            return $this->loginOAuthUser($user);
+        } catch (\Exception $e) {
+            Log::error('OAuth callback failed:', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'OAuth callback failed'], 500);
+        }
     }
 
     /**
@@ -202,7 +211,7 @@ abstract class BaseOAuthService extends BaseRestService
      */
     public function createShadowOAuthUser(OAuthUserContract $OAuthUser)
     {
-        $fullName = $OAuthUser->getName();
+        $fullName = $OAuthUser->getName() || $OAuthUser->getNickname();
         @list($firstName, $lastName) = explode(' ', $fullName);
 
         $email = $OAuthUser->getEmail();
