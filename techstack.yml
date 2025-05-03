@@ -1,0 +1,41 @@
+repo_name: dreamfactorysoftware/df-oauth
+report_id: 9b80ae784573a027d1969b53d8195a33
+repo_type: Public
+timestamp: '2023-12-06T22:37:02+00:00'
+requested_by: daniilly
+provider: github
+branch: master
+detected_tools_count: 3
+tools:
+- name: PHP
+  description: A popular general-purpose scripting language that is especially suited
+    to web development
+  website_url: http://www.php.net/
+  open_source: true
+  hosted_saas: false
+  category: Languages & Frameworks
+  sub_category: Languages
+  image_url: https://img.stackshare.io/service/991/hwUcGZ41_400x400.jpg
+  detection_source: Repo Metadata
+- name: Git
+  description: Fast, scalable, distributed revision control system
+  website_url: http://git-scm.com/
+  open_source: true
+  hosted_saas: false
+  category: Build, Test, Deploy
+  sub_category: Version Control System
+  image_url: https://img.stackshare.io/service/1046/git.png
+  detection_source: Repo Metadata
+- name: laravel/socialite
+  description: Laravel wrapper around OAuth 1 &amp; OAuth 2 libraries
+  package_url: https://packagist.org/laravel/socialite
+  version: '2.0'
+  open_source: false
+  hosted_saas: false
+  category: Build, Test, Deploy
+  sub_category: Package Managers
+  image_url: https://img.stackshare.io/package/packagist/image.png
+  detection_source_url: github.com/dreamfactorysoftware/df-oauth/blob/master/composer.json
+  detection_source: composer.json
+  last_updated_by: Danil Lytvyn
+  last_updated_on: 2023-02-03 09:16:54.000000000 Z
