@@ -6,6 +6,7 @@ use DreamFactory\Core\Enums\ServiceTypeGroups;
 use DreamFactory\Core\OAuth\Commands\SetupHerokuSSO;
 use DreamFactory\Core\OAuth\Models\HerokuAddonSSOConfig;
 use DreamFactory\Core\OAuth\Models\OAuthConfig;
+use DreamFactory\Core\OAuth\Services\AzureAD;
 use DreamFactory\Core\OAuth\Services\Bitbucket;
 use DreamFactory\Core\OAuth\Services\Facebook;
 use DreamFactory\Core\OAuth\Services\Github;
@@ -127,6 +128,28 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
                         [
                             'verb_mask' => 2,
                             'resource'  => 'sso',
+                        ],
+                    ],
+                ])
+            );
+            $df->addType(
+                new ServiceType([
+                    'name'              => 'oauth_azure_ad',
+                    'label'             => 'Azure AD OAuth',
+                    'description'       => 'OAuth service for Azure Active Directory/Entra ID supporting both Authorization Code and Client Credentials flows.',
+                    'group'             => ServiceTypeGroups::OAUTH,
+                    'config_handler'    => OAuthConfig::class,
+                    'factory'           => function ($config) {
+                        return new AzureAD($config);
+                    },
+                    'access_exceptions' => [
+                        [
+                            'verb_mask' => 2,
+                            'resource'  => 'sso',
+                        ],
+                        [
+                            'verb_mask' => 31, // All verbs for client_credentials
+                            'resource'  => 'client_credentials',
                         ],
                     ],
                 ])

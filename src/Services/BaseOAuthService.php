@@ -17,6 +17,7 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use DreamFactory\Core\OAuth\Resources\SSO;
 use DreamFactory\Core\Exceptions\InternalServerErrorException;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Log;
 
 abstract class BaseOAuthService extends BaseRestService
 {
