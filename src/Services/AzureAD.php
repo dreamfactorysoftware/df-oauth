@@ -11,6 +11,7 @@ use DreamFactory\Core\Enums\ApiDocFormatTypes;
 use DreamFactory\Core\Exceptions\BadRequestException;
 use DreamFactory\Core\Exceptions\InternalServerErrorException;
 use DreamFactory\Core\Exceptions\UnauthorizedException;
+use DreamFactory\Core\Models\User;
 use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -168,6 +169,7 @@ class AzureAD extends BaseOAuthService
 
     /**
      * Get an access token using Client Credentials flow
+     * Creates a DreamFactory service account user and returns a DreamFactory session token
      *
      * @return array
      * @throws BadRequestException
@@ -184,23 +186,41 @@ class AzureAD extends BaseOAuthService
         }
 
         try {
+            // Get Azure AD access token
             $tokenData = $this->provider->getAccessToken();
 
-            // Cache the token
+            // Cache the Azure AD token
             if (isset($tokenData['expires_in'])) {
                 $cacheKey = 'azure_ad_cc_token_' . $this->id;
                 $expiresIn = $tokenData['expires_in'] - 60; // Subtract 60 seconds for safety
                 \Cache::put($cacheKey, $tokenData, $expiresIn);
             }
 
-            // Return token data
-            return [
-                'access_token' => $tokenData['access_token'],
-                'token_type' => $tokenData['token_type'] ?? 'Bearer',
-                'expires_in' => $tokenData['expires_in'] ?? 3600,
-                'scope' => $tokenData['scope'] ?? $this->scopes,
-                'acquired_at' => Carbon::now()->toIso8601String(),
-            ];
+            // Create or retrieve service account user for this OAuth service
+            $user = $this->getOrCreateServiceAccountUser();
+
+            // Update last login date
+            $user->last_login_date = Carbon::now()->toDateTimeString();
+            $user->save();
+
+            // Create DreamFactory session with JWT token
+            Session::setUserInfoWithJWT($user);
+            $response = Session::getPublicInfo();
+
+            // Include the Azure AD access token for calling external Azure APIs
+            $response['azure_access_token'] = $tokenData['access_token'];
+            $response['azure_token_type'] = $tokenData['token_type'] ?? 'Bearer';
+            $response['azure_expires_in'] = $tokenData['expires_in'] ?? 3600;
+            $response['azure_scope'] = $tokenData['scope'] ?? $this->scopes;
+            $response['azure_acquired_at'] = Carbon::now()->toIso8601String();
+
+            Log::info('Azure AD Client Credentials session created', [
+                'service_id' => $this->id,
+                'user_id' => $user->id,
+                'tenant_id' => $this->tenantId
+            ]);
+
+            return $response;
 
         } catch (\Exception $e) {
             Log::error('Azure AD Client Credentials token request failed:', [
@@ -211,6 +231,60 @@ class AzureAD extends BaseOAuthService
 
             throw new UnauthorizedException('Failed to obtain access token: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Get or create a service account user for Client Credentials flow
+     *
+     * @return User
+     * @throws \Exception
+     */
+    protected function getOrCreateServiceAccountUser()
+    {
+        // Create a unique email for this service's service account
+        $email = 'cc_' . $this->name . '_' . $this->id . '@service.local';
+
+        // Try to find existing service account user
+        $user = User::whereEmail($email)->first();
+
+        if (empty($user)) {
+            // Create new service account user
+            $data = [
+                'username' => $email,
+                'name' => 'Service Account for ' . ($this->label ?: $this->name),
+                'first_name' => 'Service',
+                'last_name' => 'Account (' . $this->name . ')',
+                'email' => $email,
+                'is_active' => true,
+                'oauth_provider' => static::PROVIDER_NAME . '_client_credentials',
+            ];
+
+            $user = User::create($data);
+
+            Log::info('Created service account user for Azure AD Client Credentials', [
+                'user_id' => $user->id,
+                'email' => $email,
+                'service_id' => $this->id
+            ]);
+        }
+
+        // Apply default role if configured
+        if (!empty($defaultRole = $this->getDefaultRole())) {
+            User::applyDefaultUserAppRole($user, $defaultRole);
+
+            Log::info('Applied default role to service account user', [
+                'user_id' => $user->id,
+                'role_id' => $defaultRole,
+                'service_id' => $this->id
+            ]);
+        }
+
+        // Apply service-specific role mapping if configured
+        if (!empty($serviceId = $this->getServiceId())) {
+            User::applyAppRoleMapByService($user, $serviceId);
+        }
+
+        return $user;
     }
 
     /**
