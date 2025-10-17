@@ -4,7 +4,7 @@ namespace DreamFactory\Core\OAuth\Components;
 
 use Laravel\Socialite\Two\AbstractProvider;
 use Laravel\Socialite\Two\ProviderInterface;
-use Laravel\Socialite\Two\User;
+use SocialiteProviders\Manager\OAuth2\User;
 use Illuminate\Support\Arr;
 
 /**
