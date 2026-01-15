@@ -177,7 +177,7 @@ abstract class BaseOAuthService extends BaseRestService
     public function loginOAuthUser(OAuthUserContract $user)
     {
         /** @noinspection PhpUndefinedFieldInspection */
-        $responseBody = $user->accessTokenResponseBody;
+        $responseBody = $user->accessTokenResponseBody ?? null;
         /** @noinspection PhpUndefinedFieldInspection */
         $token = $user->token;
 
@@ -186,6 +186,9 @@ abstract class BaseOAuthService extends BaseRestService
         $dfUser->confirm_code = null;
         $dfUser->save();
 
+        // Ensure response body is not null - provide fallback with at least token data
+        $safeResponseBody = $responseBody ?? json_encode(['access_token' => $token]);
+
         $map = OAuthTokenMap::whereServiceId($this->id)->whereUserId($dfUser->id)->first();
         if (empty($map)) {
             OAuthTokenMap::create(
@@ -193,10 +196,10 @@ abstract class BaseOAuthService extends BaseRestService
                     'user_id'    => $dfUser->id,
                     'service_id' => $this->id,
                     'token'      => $token,
-                    'response'   => $responseBody
+                    'response'   => $safeResponseBody
                 ]);
         } else {
-            $map->update(['token' => $token, 'response' => $responseBody]);
+            $map->update(['token' => $token, 'response' => $safeResponseBody]);
         }
         Session::setUserInfoWithJWT($dfUser);
         $response = Session::getPublicInfo();
