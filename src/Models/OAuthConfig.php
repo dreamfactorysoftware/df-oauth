@@ -25,6 +25,7 @@ class OAuthConfig extends BaseServiceConfigModel
         'redirect_url',
         'icon_class',
         'custom_provider',
+        'allow_new_users',
     ];
 
     protected $encrypted = ['client_secret'];
@@ -35,6 +36,7 @@ class OAuthConfig extends BaseServiceConfigModel
         'service_id'      => 'integer',
         'default_role'    => 'integer',
         'custom_provider' => 'boolean',
+        'allow_new_users' => 'boolean',
     ];
 
     protected $rules = [
@@ -94,6 +96,13 @@ class OAuthConfig extends BaseServiceConfigModel
                 $schema['description'] =
                     'Some OAuth 2.0 type allows for custom/alternative provider in DreamFactory. ' .
                     'Check this if your OAuth type supports alternate provider and you want to use that.';
+                break;
+            case 'allow_new_users':
+                $schema['label'] = 'Allow New User Creation';
+                $schema['type'] = 'boolean';
+                $schema['default'] = true;
+                $schema['description'] =
+                    'Allow automatic creation of new users during OAuth login. If disabled, only existing users can login through this OAuth service.';
                 break;
         }
     }

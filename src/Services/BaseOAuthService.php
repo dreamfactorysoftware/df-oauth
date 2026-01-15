@@ -16,11 +16,14 @@ use Laravel\Socialite\Contracts\User as OAuthUserContract;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use DreamFactory\Core\OAuth\Resources\SSO;
 use DreamFactory\Core\Exceptions\InternalServerErrorException;
+use DreamFactory\Core\Exceptions\UnauthorizedException;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Log;
 
 abstract class BaseOAuthService extends BaseRestService
 {
     const CACHE_KEY_PREFIX = 'oauth_';
+    const DEFAULT_CACHE_TTL = 180; // 3 minutes
 
     /** @type array Service Resources */
     protected static $resources = [
@@ -115,13 +118,15 @@ abstract class BaseOAuthService extends BaseRestService
             $state = $this->provider->getState();
             if (!empty($state)) {
                 $key = static::CACHE_KEY_PREFIX . $state;
-                \Cache::put($key, $this->getName(), 180);
+                $ttl = env('OAUTH_CACHE_TTL', self::DEFAULT_CACHE_TTL);
+                \Cache::put($key, $this->getName(), $ttl);
             }
         } elseif (isset($traitsUsed[$traitOne])) {
             $token = $this->provider->getOAuthToken();
             if (!empty($token)) {
                 $key = static::CACHE_KEY_PREFIX . $token;
-                \Cache::put($key, $this->getName(), 180);
+                $ttl = env('OAUTH_CACHE_TTL', self::DEFAULT_CACHE_TTL);
+                \Cache::put($key, $this->getName(), $ttl);
             }
         }
 
@@ -145,15 +150,20 @@ abstract class BaseOAuthService extends BaseRestService
             $provider = $this->getProvider();
             $user = $provider->user();
 
-            // Log full response for debugging
-            Log::debug('OAuth user response:', (array) $user);
-            Log::debug('Access Token:', ['token' => $user->token ?? 'N/A']);
-            Log::debug('Access Token Response Body:', (array) ($user->accessTokenResponseBody ?? []));
+            // Log OAuth success without sensitive data
+            Log::info('OAuth callback processed successfully', [
+                'provider' => $this->getProviderName(),
+                'user_id' => $user->getId() ?? 'unknown'
+            ]);
 
             return $this->loginOAuthUser($user);
         } catch (\Exception $e) {
             Log::error('OAuth callback failed:', ['error' => $e->getMessage()]);
-            return response()->json(['error' => 'OAuth callback failed'], 500);
+
+            // For OAuth callbacks, redirect to login page with error instead of returning JSON
+            $errorMessage = urlencode($e->getMessage());
+            $baseUrl = $this->getRedirectBaseUrl();
+            return redirect($baseUrl . "?error=" . $errorMessage);
         }
     }
 
@@ -228,6 +238,15 @@ abstract class BaseOAuthService extends BaseRestService
         $user = User::whereEmail($email)->first();
 
         if (empty($user)) {
+            // Check if new user creation is allowed for this OAuth service
+            $config = Arr::get($this->config, 'allow_new_users', true);
+            if (!$config) {
+                throw new UnauthorizedException(
+                    'New user registration is not allowed for this OAuth service. ' .
+                    'Please contact your administrator to create an account or enable new user registration.'
+                );
+            }
+
             $data = [
                 'username'       => $email,
                 'name'           => $fullName,
@@ -241,7 +260,8 @@ abstract class BaseOAuthService extends BaseRestService
             $user = User::create($data);
         }
 
-        // todo Should this be done only if the user was not already there?
+        // Apply default role and service-specific role mappings
+        // This is done for both new and existing users to ensure proper role assignment
         if (!empty($defaultRole = $this->getDefaultRole())) {
             User::applyDefaultUserAppRole($user, $defaultRole);
         }
@@ -260,5 +280,23 @@ abstract class BaseOAuthService extends BaseRestService
     protected function getOAuthResponse()
     {
         return OAuthTokenMap::whereServiceId($this->id)->whereUserId(Session::getCurrentUserId())->value('response');
+    }
+
+    /**
+     * Get the appropriate redirect base URL based on environment
+     */
+    private function getRedirectBaseUrl()
+    {
+        // Check for custom OAuth redirect URL first
+        $customUrl = env('OAUTH_REDIRECT_URL');
+        if ($customUrl) {
+            Log::debug('Using custom OAuth redirect URL', ['url' => $customUrl]);
+            return $customUrl;
+        }
+
+        // Fall back to production URL
+        $prodUrl = env('OAUTH_DEFAULT_REDIRECT_PATH', '/dreamfactory/dist/');
+        Log::debug('Using default production URL', ['url' => $prodUrl]);
+        return $prodUrl;
     }
 }
