@@ -15,12 +15,12 @@ use Laravel\Socialite\Contracts\Provider;
 use Laravel\Socialite\Contracts\User as OAuthUserContract;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use DreamFactory\Core\OAuth\Resources\SSO;
-use DreamFactory\Core\Exceptions\InternalServerErrorException;
 use Illuminate\Support\Arr;
 
 abstract class BaseOAuthService extends BaseRestService
 {
     const CACHE_KEY_PREFIX = 'oauth_';
+    const REDIRECT_CACHE_KEY_PREFIX = 'oauth_redirect_';
 
     /** @type array Service Resources */
     protected static $resources = [
@@ -106,6 +106,9 @@ abstract class BaseOAuthService extends BaseRestService
      */
     public function handleLogin($request)
     {
+        // Capture external redirect URL if provided (for cross-domain OAuth flows)
+        $externalRedirect = $request->input('redirect') ?? $request->query('redirect');
+
         /** @var RedirectResponse $response */
         $response = $this->provider->redirect();
         $traitsUsed = class_uses($this->provider);
@@ -116,12 +119,24 @@ abstract class BaseOAuthService extends BaseRestService
             if (!empty($state)) {
                 $key = static::CACHE_KEY_PREFIX . $state;
                 \Cache::put($key, $this->getName(), 180);
+
+                // Store external redirect URL if provided and valid
+                if (!empty($externalRedirect) && $this->isValidRedirectUrl($externalRedirect)) {
+                    $redirectKey = static::REDIRECT_CACHE_KEY_PREFIX . $state;
+                    \Cache::put($redirectKey, $externalRedirect, 180);
+                }
             }
         } elseif (isset($traitsUsed[$traitOne])) {
             $token = $this->provider->getOAuthToken();
             if (!empty($token)) {
                 $key = static::CACHE_KEY_PREFIX . $token;
                 \Cache::put($key, $this->getName(), 180);
+
+                // Store external redirect URL if provided and valid
+                if (!empty($externalRedirect) && $this->isValidRedirectUrl($externalRedirect)) {
+                    $redirectKey = static::REDIRECT_CACHE_KEY_PREFIX . $token;
+                    \Cache::put($redirectKey, $externalRedirect, 180);
+                }
             }
         }
 
@@ -137,15 +152,45 @@ abstract class BaseOAuthService extends BaseRestService
     /**
      * Handles OAuth callback
      *
-     * @return array
+     * @return array|RedirectResponse
      */
     public function handleOAuthCallback()
     {
+        // Get state from request for redirect lookup
+        $state = request()->input('state') ?? request()->input('oauth_token');
+        $externalRedirect = null;
+
+        if (!empty($state)) {
+            $redirectKey = static::REDIRECT_CACHE_KEY_PREFIX . $state;
+            $externalRedirect = \Cache::pull($redirectKey);
+        }
+
         $provider = $this->getProvider();
         /** @var OAuthUserContract $user */
         $user = $provider->user();
 
-        return $this->loginOAuthUser($user);
+        $sessionData = $this->loginOAuthUser($user);
+        $sessionToken = $sessionData['session_token'] ?? $sessionData['session_id'] ?? null;
+
+        // Redirect with session token - either to external URL or default frontend
+        if (!empty($sessionToken)) {
+            if (!empty($externalRedirect)) {
+                // External redirect for cross-domain OAuth flows
+                $separator = (strpos($externalRedirect, '?') !== false) ? '&' : '?';
+                $redirectUrl = $externalRedirect . $separator . 'session_token=' . urlencode($sessionToken);
+            } else {
+                // Default redirect to admin interface
+                $frontendUrl = config('df.oauth.default_redirect_url', '/');
+                $separator = (strpos($frontendUrl, '?') !== false) ? '&' : '?';
+                $redirectUrl = $frontendUrl . $separator . 'session_token=' . urlencode($sessionToken);
+            }
+            // Use header() directly because DreamFactory's API response handling
+            // converts RedirectResponse to JSON. This bypasses the framework.
+            header('Location: ' . $redirectUrl, true, 302);
+            exit();
+        }
+
+        return $sessionData;
     }
 
     /**
@@ -251,5 +296,44 @@ abstract class BaseOAuthService extends BaseRestService
     protected function getOAuthResponse()
     {
         return OAuthTokenMap::whereServiceId($this->id)->whereUserId(Session::getCurrentUserId())->value('response');
+    }
+
+    /**
+     * Validates external redirect URL for security.
+     *
+     * @param string $url
+     * @return bool
+     */
+    protected function isValidRedirectUrl($url)
+    {
+        // Must be a valid URL
+        if (!filter_var($url, FILTER_VALIDATE_URL)) {
+            return false;
+        }
+
+        $parsed = parse_url($url);
+
+        // Must be HTTPS in production (allow HTTP in debug mode for local development)
+        if (!config('app.debug') && ($parsed['scheme'] ?? '') !== 'https') {
+            return false;
+        }
+
+        // Check against whitelist if configured
+        $whitelist = config('df.oauth.allowed_redirect_domains', []);
+        if (!empty($whitelist)) {
+            $host = $parsed['host'] ?? '';
+            $allowed = false;
+            foreach ($whitelist as $pattern) {
+                if (fnmatch($pattern, $host)) {
+                    $allowed = true;
+                    break;
+                }
+            }
+            if (!$allowed) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

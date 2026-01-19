@@ -21,6 +21,13 @@ class SSO extends BaseRestResource
     }
 
     /** {@inheritdoc} */
+    protected function handleGET()
+    {
+        // Handle OAuth callback (code + state from OAuth provider redirect)
+        return $this->getParent()->handleOAuthCallback();
+    }
+
+    /** {@inheritdoc} */
     protected function handlePOST()
     {
         $payload = $this->request->getPayloadData();
