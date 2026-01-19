@@ -21,7 +21,7 @@ class HerokuAddonSSO extends BaseRestResource
     }
 
     /** {@inheritdoc} */
-    protected function handlePOST()
+    protected function handleGET()
     {
         $payload = $this->request->getPayloadData();
         $result = $this->getParent()->handleSSORequest($payload);
@@ -29,7 +29,7 @@ class HerokuAddonSSO extends BaseRestResource
         return $this->respond()
             ->setStatusCode(302)
             ->setHeaders([
-                'Location' => "/?session_token={$result['jwt']}",
+                'Location' => "/?jwt={$result['jwt']}",
             ])
             ->setContent($result);
     }
@@ -44,7 +44,7 @@ class HerokuAddonSSO extends BaseRestResource
 
         return [
             $path => [
-                'post' => [
+                'get' => [
                     'summary' => 'Single Sign On',
                     'description' => 'Performs Single Sign On using Heroku Add-on API',
                     'operationId' => 'perform' . $capitalized . 'SSO',

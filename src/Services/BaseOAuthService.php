@@ -15,12 +15,16 @@ use Laravel\Socialite\Contracts\Provider;
 use Laravel\Socialite\Contracts\User as OAuthUserContract;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use DreamFactory\Core\OAuth\Resources\SSO;
+use DreamFactory\Core\Exceptions\InternalServerErrorException;
+use DreamFactory\Core\Exceptions\UnauthorizedException;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Log;
 
 abstract class BaseOAuthService extends BaseRestService
 {
     const CACHE_KEY_PREFIX = 'oauth_';
     const REDIRECT_CACHE_KEY_PREFIX = 'oauth_redirect_';
+    const DEFAULT_CACHE_TTL = 180; // 3 minutes
 
     /** @type array Service Resources */
     protected static $resources = [
@@ -118,7 +122,8 @@ abstract class BaseOAuthService extends BaseRestService
             $state = $this->provider->getState();
             if (!empty($state)) {
                 $key = static::CACHE_KEY_PREFIX . $state;
-                \Cache::put($key, $this->getName(), 180);
+                $ttl = env('OAUTH_CACHE_TTL', self::DEFAULT_CACHE_TTL);
+                \Cache::put($key, $this->getName(), $ttl);
 
                 // Store external redirect URL if provided and valid
                 if (!empty($externalRedirect) && $this->isValidRedirectUrl($externalRedirect)) {
@@ -130,7 +135,8 @@ abstract class BaseOAuthService extends BaseRestService
             $token = $this->provider->getOAuthToken();
             if (!empty($token)) {
                 $key = static::CACHE_KEY_PREFIX . $token;
-                \Cache::put($key, $this->getName(), 180);
+                $ttl = env('OAUTH_CACHE_TTL', self::DEFAULT_CACHE_TTL);
+                \Cache::put($key, $this->getName(), $ttl);
 
                 // Store external redirect URL if provided and valid
                 if (!empty($externalRedirect) && $this->isValidRedirectUrl($externalRedirect)) {
@@ -203,7 +209,7 @@ abstract class BaseOAuthService extends BaseRestService
     public function loginOAuthUser(OAuthUserContract $user)
     {
         /** @noinspection PhpUndefinedFieldInspection */
-        $responseBody = $user->accessTokenResponseBody;
+        $responseBody = $user->accessTokenResponseBody ?? null;
         /** @noinspection PhpUndefinedFieldInspection */
         $token = $user->token;
 
@@ -212,6 +218,9 @@ abstract class BaseOAuthService extends BaseRestService
         $dfUser->confirm_code = null;
         $dfUser->save();
 
+        // Ensure response body is not null - provide fallback with at least token data
+        $safeResponseBody = $responseBody ?? json_encode(['access_token' => $token]);
+
         $map = OAuthTokenMap::whereServiceId($this->id)->whereUserId($dfUser->id)->first();
         if (empty($map)) {
             OAuthTokenMap::create(
@@ -219,10 +228,10 @@ abstract class BaseOAuthService extends BaseRestService
                     'user_id'    => $dfUser->id,
                     'service_id' => $this->id,
                     'token'      => $token,
-                    'response'   => $responseBody
+                    'response'   => $safeResponseBody
                 ]);
         } else {
-            $map->update(['token' => $token, 'response' => $responseBody]);
+            $map->update(['token' => $token, 'response' => $safeResponseBody]);
         }
         Session::setUserInfoWithJWT($dfUser);
         $response = Session::getPublicInfo();
@@ -247,7 +256,7 @@ abstract class BaseOAuthService extends BaseRestService
      */
     public function createShadowOAuthUser(OAuthUserContract $OAuthUser)
     {
-        $fullName = $OAuthUser->getName();
+        $fullName = $OAuthUser->getName() || $OAuthUser->getNickname();
         @list($firstName, $lastName) = explode(' ', $fullName);
 
         $email = $OAuthUser->getEmail();
@@ -264,6 +273,15 @@ abstract class BaseOAuthService extends BaseRestService
         $user = User::whereEmail($email)->first();
 
         if (empty($user)) {
+            // Check if new user creation is allowed for this OAuth service
+            $config = Arr::get($this->config, 'allow_new_users', true);
+            if (!$config) {
+                throw new UnauthorizedException(
+                    'New user registration is not allowed for this OAuth service. ' .
+                    'Please contact your administrator to create an account or enable new user registration.'
+                );
+            }
+
             $data = [
                 'username'       => $email,
                 'name'           => $fullName,
@@ -277,7 +295,8 @@ abstract class BaseOAuthService extends BaseRestService
             $user = User::create($data);
         }
 
-        // todo Should this be done only if the user was not already there?
+        // Apply default role and service-specific role mappings
+        // This is done for both new and existing users to ensure proper role assignment
         if (!empty($defaultRole = $this->getDefaultRole())) {
             User::applyDefaultUserAppRole($user, $defaultRole);
         }
@@ -335,5 +354,22 @@ abstract class BaseOAuthService extends BaseRestService
         }
 
         return true;
+     
+     /**
+     * Get the appropriate redirect base URL based on environment
+     */
+    private function getRedirectBaseUrl()
+    {
+        // Check for custom OAuth redirect URL first
+        $customUrl = env('OAUTH_REDIRECT_URL');
+        if ($customUrl) {
+            Log::debug('Using custom OAuth redirect URL', ['url' => $customUrl]);
+            return $customUrl;
+        }
+
+        // Fall back to production URL
+        $prodUrl = env('OAUTH_DEFAULT_REDIRECT_PATH', '/dreamfactory/dist/');
+        Log::debug('Using default production URL', ['url' => $prodUrl]);
+        return $prodUrl;
     }
 }

@@ -3,6 +3,7 @@
 namespace DreamFactory\Core\OAuth\Resources;
 
 use DreamFactory\Core\Resources\BaseRestResource;
+use Log;
 
 class SSO extends BaseRestResource
 {
@@ -30,12 +31,84 @@ class SSO extends BaseRestResource
     /** {@inheritdoc} */
     protected function handlePOST()
     {
-        $payload = $this->request->getPayloadData();
+        $code = $this->request->input('code');
+
+        if (!$code) {
+            Log::error('Missing OAuth code in callback');
+
+            // Redirect to login page with error message instead of returning JSON
+            return $this->respond()
+                ->setStatusCode(302)
+                ->setHeaders([
+                    'Location' => "/dreamfactory/dist/?error=" . urlencode('OAuth authorization was denied or failed'),
+                ])
+                ->setContent('');
+        }
+
         /** @var $provider \DreamFactory\Core\OAuth\Components\DfOAuthTwoProvider */
         $provider = $this->getParent()->getProvider();
-        $user = $provider->getUserFromTokenResponse($payload);
 
-        return $this->getParent()->loginOAuthUser($user);
+        try {
+            Log::info('Processing OAuth token exchange');
+            $tokenResponse = $provider->getAccessTokenResponse($code);
+
+            if (!isset($tokenResponse['access_token'])) {
+                throw new \Exception('Access token missing in response');
+            }
+
+            $user = $provider->getUserFromTokenResponse($tokenResponse);
+            Log::info('OAuth user retrieved successfully', [
+                'provider' => $this->getParent()->getProviderName(),
+                'user_id' => $user->getId() ?? 'unknown'
+            ]);
+
+            $result = $this->getParent()->loginOAuthUser($user);
+            // Check if we're in development mode for JWT redirect too
+            $baseUrl = $this->getRedirectBaseUrl();
+            $jwtRedirectUrl = $baseUrl . "?jwt=" . urlencode($result['session_token'] ?? '');
+
+            return $this->respond()
+                ->setStatusCode(302)
+                ->setHeaders([
+                    'Location' => $jwtRedirectUrl,
+                ])
+                ->setContent(json_encode($result));
+        } catch (\Exception $e) {
+            Log::error('OAuth callback failed:', ['error' => $e->getMessage()]);
+
+            // For OAuth callbacks, we need to redirect to an error page instead of returning JSON
+            $errorMessage = urlencode($e->getMessage());
+
+            // Check if we're in development mode (detect by checking if port 4200 is accessible)
+            $baseUrl = $this->getRedirectBaseUrl();
+            $redirectUrl = $baseUrl . "?error=" . $errorMessage;
+            Log::info('OAuth error redirect URL:', ['url' => $redirectUrl]);
+
+            return $this->respond()
+                ->setStatusCode(302)
+                ->setHeaders([
+                    'Location' => $redirectUrl,
+                ])
+                ->setContent('');
+        }
+    }
+
+    /**
+     * Get the appropriate redirect base URL based on environment
+     */
+    private function getRedirectBaseUrl()
+    {
+        // Check for custom OAuth redirect URL first
+        $customUrl = env('OAUTH_REDIRECT_URL');
+        if ($customUrl) {
+            Log::info('Using custom OAuth redirect URL', ['url' => $customUrl]);
+            return $customUrl;
+        }
+
+        // Fall back to production URL
+        $prodUrl = env('OAUTH_DEFAULT_REDIRECT_PATH', '/dreamfactory/dist/');
+        Log::info('Using default production URL', ['url' => $prodUrl]);
+        return $prodUrl;
     }
 
     /** {@inheritdoc} */
@@ -48,7 +121,7 @@ class SSO extends BaseRestResource
 
         $base = [
             $path => [
-                'post' => [
+                'get' => [
                     'summary'     => 'Single Sign On',
                     'description' => 'Performs Single Sign On using OAuth 2.0 access token',
                     'operationId' => 'perform' . $capitalized . 'SSO',
