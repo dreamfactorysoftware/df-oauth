@@ -16,11 +16,15 @@ use Laravel\Socialite\Contracts\User as OAuthUserContract;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use DreamFactory\Core\OAuth\Resources\SSO;
 use DreamFactory\Core\Exceptions\InternalServerErrorException;
+use DreamFactory\Core\Exceptions\UnauthorizedException;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Log;
 
 abstract class BaseOAuthService extends BaseRestService
 {
     const CACHE_KEY_PREFIX = 'oauth_';
+    const REDIRECT_CACHE_KEY_PREFIX = 'oauth_redirect_';
+    const DEFAULT_CACHE_TTL = 180; // 3 minutes
 
     /** @type array Service Resources */
     protected static $resources = [
@@ -106,6 +110,9 @@ abstract class BaseOAuthService extends BaseRestService
      */
     public function handleLogin($request)
     {
+        // Capture external redirect URL if provided (for cross-domain OAuth flows)
+        $externalRedirect = $request->input('redirect') ?? $request->query('redirect');
+
         /** @var RedirectResponse $response */
         $response = $this->provider->redirect();
         $traitsUsed = class_uses($this->provider);
@@ -115,13 +122,27 @@ abstract class BaseOAuthService extends BaseRestService
             $state = $this->provider->getState();
             if (!empty($state)) {
                 $key = static::CACHE_KEY_PREFIX . $state;
-                \Cache::put($key, $this->getName(), 180);
+                $ttl = env('OAUTH_CACHE_TTL', self::DEFAULT_CACHE_TTL);
+                \Cache::put($key, $this->getName(), $ttl);
+
+                // Store external redirect URL if provided and valid
+                if (!empty($externalRedirect) && $this->isValidRedirectUrl($externalRedirect)) {
+                    $redirectKey = static::REDIRECT_CACHE_KEY_PREFIX . $state;
+                    \Cache::put($redirectKey, $externalRedirect, 180);
+                }
             }
         } elseif (isset($traitsUsed[$traitOne])) {
             $token = $this->provider->getOAuthToken();
             if (!empty($token)) {
                 $key = static::CACHE_KEY_PREFIX . $token;
-                \Cache::put($key, $this->getName(), 180);
+                $ttl = env('OAUTH_CACHE_TTL', self::DEFAULT_CACHE_TTL);
+                \Cache::put($key, $this->getName(), $ttl);
+
+                // Store external redirect URL if provided and valid
+                if (!empty($externalRedirect) && $this->isValidRedirectUrl($externalRedirect)) {
+                    $redirectKey = static::REDIRECT_CACHE_KEY_PREFIX . $token;
+                    \Cache::put($redirectKey, $externalRedirect, 180);
+                }
             }
         }
 
@@ -137,24 +158,45 @@ abstract class BaseOAuthService extends BaseRestService
     /**
      * Handles OAuth callback
      *
-     * @return array
+     * @return array|RedirectResponse
      */
     public function handleOAuthCallback()
     {
-        try {
-            $provider = $this->getProvider();
-            $user = $provider->user();
+        // Get state from request for redirect lookup
+        $state = request()->input('state') ?? request()->input('oauth_token');
+        $externalRedirect = null;
 
-            // Log full response for debugging
-            Log::debug('OAuth user response:', (array) $user);
-            Log::debug('Access Token:', ['token' => $user->token ?? 'N/A']);
-            Log::debug('Access Token Response Body:', (array) ($user->accessTokenResponseBody ?? []));
-
-            return $this->loginOAuthUser($user);
-        } catch (\Exception $e) {
-            Log::error('OAuth callback failed:', ['error' => $e->getMessage()]);
-            return response()->json(['error' => 'OAuth callback failed'], 500);
+        if (!empty($state)) {
+            $redirectKey = static::REDIRECT_CACHE_KEY_PREFIX . $state;
+            $externalRedirect = \Cache::pull($redirectKey);
         }
+
+        $provider = $this->getProvider();
+        /** @var OAuthUserContract $user */
+        $user = $provider->user();
+
+        $sessionData = $this->loginOAuthUser($user);
+        $sessionToken = $sessionData['session_token'] ?? $sessionData['session_id'] ?? null;
+
+        // Redirect with session token - either to external URL or default frontend
+        if (!empty($sessionToken)) {
+            if (!empty($externalRedirect)) {
+                // External redirect for cross-domain OAuth flows
+                $separator = (strpos($externalRedirect, '?') !== false) ? '&' : '?';
+                $redirectUrl = $externalRedirect . $separator . 'session_token=' . urlencode($sessionToken);
+            } else {
+                // Default redirect to admin interface
+                $frontendUrl = config('df.oauth.default_redirect_url', '/');
+                $separator = (strpos($frontendUrl, '?') !== false) ? '&' : '?';
+                $redirectUrl = $frontendUrl . $separator . 'session_token=' . urlencode($sessionToken);
+            }
+            // Use header() directly because DreamFactory's API response handling
+            // converts RedirectResponse to JSON. This bypasses the framework.
+            header('Location: ' . $redirectUrl, true, 302);
+            exit();
+        }
+
+        return $sessionData;
     }
 
     /**
@@ -167,7 +209,7 @@ abstract class BaseOAuthService extends BaseRestService
     public function loginOAuthUser(OAuthUserContract $user)
     {
         /** @noinspection PhpUndefinedFieldInspection */
-        $responseBody = $user->accessTokenResponseBody;
+        $responseBody = $user->accessTokenResponseBody ?? null;
         /** @noinspection PhpUndefinedFieldInspection */
         $token = $user->token;
 
@@ -176,6 +218,9 @@ abstract class BaseOAuthService extends BaseRestService
         $dfUser->confirm_code = null;
         $dfUser->save();
 
+        // Ensure response body is not null - provide fallback with at least token data
+        $safeResponseBody = $responseBody ?? json_encode(['access_token' => $token]);
+
         $map = OAuthTokenMap::whereServiceId($this->id)->whereUserId($dfUser->id)->first();
         if (empty($map)) {
             OAuthTokenMap::create(
@@ -183,10 +228,10 @@ abstract class BaseOAuthService extends BaseRestService
                     'user_id'    => $dfUser->id,
                     'service_id' => $this->id,
                     'token'      => $token,
-                    'response'   => $responseBody
+                    'response'   => $safeResponseBody
                 ]);
         } else {
-            $map->update(['token' => $token, 'response' => $responseBody]);
+            $map->update(['token' => $token, 'response' => $safeResponseBody]);
         }
         Session::setUserInfoWithJWT($dfUser);
         $response = Session::getPublicInfo();
@@ -228,6 +273,15 @@ abstract class BaseOAuthService extends BaseRestService
         $user = User::whereEmail($email)->first();
 
         if (empty($user)) {
+            // Check if new user creation is allowed for this OAuth service
+            $config = Arr::get($this->config, 'allow_new_users', true);
+            if (!$config) {
+                throw new UnauthorizedException(
+                    'New user registration is not allowed for this OAuth service. ' .
+                    'Please contact your administrator to create an account or enable new user registration.'
+                );
+            }
+
             $data = [
                 'username'       => $email,
                 'name'           => $fullName,
@@ -241,7 +295,8 @@ abstract class BaseOAuthService extends BaseRestService
             $user = User::create($data);
         }
 
-        // todo Should this be done only if the user was not already there?
+        // Apply default role and service-specific role mappings
+        // This is done for both new and existing users to ensure proper role assignment
         if (!empty($defaultRole = $this->getDefaultRole())) {
             User::applyDefaultUserAppRole($user, $defaultRole);
         }
@@ -260,5 +315,61 @@ abstract class BaseOAuthService extends BaseRestService
     protected function getOAuthResponse()
     {
         return OAuthTokenMap::whereServiceId($this->id)->whereUserId(Session::getCurrentUserId())->value('response');
+    }
+
+    /**
+     * Validates external redirect URL for security.
+     *
+     * @param string $url
+     * @return bool
+     */
+    protected function isValidRedirectUrl($url)
+    {
+        // Must be a valid URL
+        if (!filter_var($url, FILTER_VALIDATE_URL)) {
+            return false;
+        }
+
+        $parsed = parse_url($url);
+
+        // Must be HTTPS in production (allow HTTP in debug mode for local development)
+        if (!config('app.debug') && ($parsed['scheme'] ?? '') !== 'https') {
+            return false;
+        }
+
+        // Check against whitelist if configured
+        $whitelist = config('df.oauth.allowed_redirect_domains', []);
+        if (!empty($whitelist)) {
+            $host = $parsed['host'] ?? '';
+            $allowed = false;
+            foreach ($whitelist as $pattern) {
+                if (fnmatch($pattern, $host)) {
+                    $allowed = true;
+                    break;
+                }
+            }
+            if (!$allowed) {
+                return false;
+            }
+        }
+
+        return true;
+     
+     /**
+     * Get the appropriate redirect base URL based on environment
+     */
+    private function getRedirectBaseUrl()
+    {
+        // Check for custom OAuth redirect URL first
+        $customUrl = env('OAUTH_REDIRECT_URL');
+        if ($customUrl) {
+            Log::debug('Using custom OAuth redirect URL', ['url' => $customUrl]);
+            return $customUrl;
+        }
+
+        // Fall back to production URL
+        $prodUrl = env('OAUTH_DEFAULT_REDIRECT_PATH', '/dreamfactory/dist/');
+        Log::debug('Using default production URL', ['url' => $prodUrl]);
+        return $prodUrl;
     }
 }

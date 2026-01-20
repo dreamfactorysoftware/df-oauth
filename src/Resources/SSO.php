@@ -24,46 +24,91 @@ class SSO extends BaseRestResource
     /** {@inheritdoc} */
     protected function handleGET()
     {
+        // Handle OAuth callback (code + state from OAuth provider redirect)
+        return $this->getParent()->handleOAuthCallback();
+    }
+
+    /** {@inheritdoc} */
+    protected function handlePOST()
+    {
         $code = $this->request->input('code');
 
         if (!$code) {
             Log::error('Missing OAuth code in callback');
-            return response()->json(['error' => 'OAuth code missing'], 400);
+
+            // Redirect to login page with error message instead of returning JSON
+            return $this->respond()
+                ->setStatusCode(302)
+                ->setHeaders([
+                    'Location' => "/dreamfactory/dist/?error=" . urlencode('OAuth authorization was denied or failed'),
+                ])
+                ->setContent('');
         }
 
         /** @var $provider \DreamFactory\Core\OAuth\Components\DfOAuthTwoProvider */
         $provider = $this->getParent()->getProvider();
 
         try {
-            Log::debug('Exchanging code for access token...');
+            Log::info('Processing OAuth token exchange');
             $tokenResponse = $provider->getAccessTokenResponse($code);
-            Log::debug('Access Token Response:', $tokenResponse);
 
             if (!isset($tokenResponse['access_token'])) {
                 throw new \Exception('Access token missing in response');
             }
 
-            $accessToken = $tokenResponse['access_token'];
-            Log::debug("OAuth Access Token: $accessToken");
-
             $user = $provider->getUserFromTokenResponse($tokenResponse);
-            Log::debug('OAuth User Object:', [
-                'name' => $user->getName(),
-                'nickname' => $user->getNickname(),
-                'email' => $user->getEmail(),
+            Log::info('OAuth user retrieved successfully', [
+                'provider' => $this->getParent()->getProviderName(),
+                'user_id' => $user->getId() ?? 'unknown'
             ]);
 
             $result = $this->getParent()->loginOAuthUser($user);
+            // Check if we're in development mode for JWT redirect too
+            $baseUrl = $this->getRedirectBaseUrl();
+            $jwtRedirectUrl = $baseUrl . "?jwt=" . urlencode($result['session_token'] ?? '');
+
             return $this->respond()
                 ->setStatusCode(302)
                 ->setHeaders([
-                    'Location' => "/dreamfactory/dist/index.html#/auth/login?jwt=" . urlencode($result['session_token'] ?? ''),
+                    'Location' => $jwtRedirectUrl,
                 ])
                 ->setContent(json_encode($result));
         } catch (\Exception $e) {
             Log::error('OAuth callback failed:', ['error' => $e->getMessage()]);
-            return response()->json(['error' => 'OAuth callback failed'], 500);
+
+            // For OAuth callbacks, we need to redirect to an error page instead of returning JSON
+            $errorMessage = urlencode($e->getMessage());
+
+            // Check if we're in development mode (detect by checking if port 4200 is accessible)
+            $baseUrl = $this->getRedirectBaseUrl();
+            $redirectUrl = $baseUrl . "?error=" . $errorMessage;
+            Log::info('OAuth error redirect URL:', ['url' => $redirectUrl]);
+
+            return $this->respond()
+                ->setStatusCode(302)
+                ->setHeaders([
+                    'Location' => $redirectUrl,
+                ])
+                ->setContent('');
         }
+    }
+
+    /**
+     * Get the appropriate redirect base URL based on environment
+     */
+    private function getRedirectBaseUrl()
+    {
+        // Check for custom OAuth redirect URL first
+        $customUrl = env('OAUTH_REDIRECT_URL');
+        if ($customUrl) {
+            Log::info('Using custom OAuth redirect URL', ['url' => $customUrl]);
+            return $customUrl;
+        }
+
+        // Fall back to production URL
+        $prodUrl = env('OAUTH_DEFAULT_REDIRECT_PATH', '/dreamfactory/dist/');
+        Log::info('Using default production URL', ['url' => $prodUrl]);
+        return $prodUrl;
     }
 
     /** {@inheritdoc} */
