@@ -6,7 +6,7 @@ use DreamFactory\Core\Enums\ServiceTypeGroups;
 use DreamFactory\Core\OAuth\Commands\SetupHerokuSSO;
 use DreamFactory\Core\OAuth\Models\HerokuAddonSSOConfig;
 use DreamFactory\Core\OAuth\Models\OAuthConfig;
-use DreamFactory\Core\OAuth\Services\AzureAD;
+// AzureAD service is provided by df-azure-ad package
 use DreamFactory\Core\OAuth\Services\Bitbucket;
 use DreamFactory\Core\OAuth\Services\Facebook;
 use DreamFactory\Core\OAuth\Services\Github;
@@ -132,28 +132,10 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
                     ],
                 ])
             );
-            $df->addType(
-                new ServiceType([
-                    'name'              => 'oauth_azure_ad',
-                    'label'             => 'Azure AD OAuth',
-                    'description'       => 'OAuth service for Azure Active Directory/Entra ID supporting both Authorization Code and Client Credentials flows.',
-                    'group'             => ServiceTypeGroups::OAUTH,
-                    'config_handler'    => OAuthConfig::class,
-                    'factory'           => function ($config) {
-                        return new AzureAD($config);
-                    },
-                    'access_exceptions' => [
-                        [
-                            'verb_mask' => 2,
-                            'resource'  => 'sso',
-                        ],
-                        [
-                            'verb_mask' => 31, // All verbs for client_credentials
-                            'resource'  => 'client_credentials',
-                        ],
-                    ],
-                ])
-            );
+            // NOTE: oauth_azure_ad service type is registered by the df-azure-ad package
+            // which provides Azure AD specific features like Entra ID group-to-role mapping.
+            // Do not register oauth_azure_ad here to avoid conflicts.
+
             $df->addType(
                 new ServiceType([
                     'name'              => 'oauth_bitbucket',

@@ -42,10 +42,7 @@ class OAuthConfig extends BaseServiceConfigModel
         'default_role'          => 'integer',
         'custom_provider'       => 'boolean',
         'is_client_credentials' => 'boolean',
-        'service_id'      => 'integer',
-        'default_role'    => 'integer',
-        'custom_provider' => 'boolean',
-        'allow_new_users' => 'boolean',
+        'allow_new_users'       => 'boolean',
     ];
 
     protected $rules = [
@@ -153,6 +150,7 @@ class OAuthConfig extends BaseServiceConfigModel
                 $schema['label'] = 'Enable Client Credentials Flow';
                 $schema['description'] =
                     'Enable OAuth 2.0 Client Credentials flow for service-to-service authentication (Azure AD/Entra).';
+                break;
             case 'allow_new_users':
                 $schema['label'] = 'Allow New User Creation';
                 $schema['type'] = 'boolean';
