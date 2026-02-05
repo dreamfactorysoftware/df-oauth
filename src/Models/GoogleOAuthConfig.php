@@ -139,7 +139,7 @@ class GoogleOAuthConfig extends OAuthConfig
                 $schema['type'] = 'boolean';
                 $schema['default'] = false;
                 $schema['description'] = 'Enable mapping of Google group memberships to DreamFactory roles. ' .
-                                         'Requires Cloud Identity Groups API access in your Google Cloud project.';
+                                         'Requires Admin SDK API enabled and domain-wide delegation configured in Google Workspace.';
                 break;
         }
     }
