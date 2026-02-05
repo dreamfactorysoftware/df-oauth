@@ -56,14 +56,25 @@ class GoogleProvider extends \Laravel\Socialite\Two\GoogleProvider
     protected function getUserGroups($token, $userEmail)
     {
         try {
+            \Log::info('Google OAuth: Fetching groups for user', ['email' => $userEmail]);
+
             $query = urlencode("member_key_id == '{$userEmail}' && 'cloudidentity.googleapis.com/groups.discussion_forum' in labels");
             $url = "https://cloudidentity.googleapis.com/v1/groups/-/memberships:searchDirectGroups?query={$query}";
+
+            \Log::debug('Google OAuth: Groups API URL', ['url' => $url]);
 
             $response = $this->getHttpClient()->get($url, [
                 'headers' => ['Authorization' => 'Bearer ' . $token]
             ]);
 
-            $data = json_decode($response->getBody()->getContents(), true);
+            $body = $response->getBody()->getContents();
+            $data = json_decode($body, true);
+
+            \Log::info('Google OAuth: Groups API response', [
+                'status' => $response->getStatusCode(),
+                'body' => $body
+            ]);
+
             $groups = [];
 
             if (isset($data['memberships']) && is_array($data['memberships'])) {
@@ -77,9 +88,23 @@ class GoogleProvider extends \Laravel\Socialite\Two\GoogleProvider
                 }
             }
 
+            \Log::info('Google OAuth: Parsed groups', ['groups' => $groups]);
+
             return $groups;
+        } catch (\GuzzleHttp\Exception\ClientException $e) {
+            $response = $e->getResponse();
+            $body = $response ? $response->getBody()->getContents() : 'No response body';
+            \Log::error('Google OAuth: Groups API client error', [
+                'status' => $response ? $response->getStatusCode() : 'unknown',
+                'error' => $e->getMessage(),
+                'response' => $body
+            ]);
+            return [];
         } catch (\Exception $e) {
-            \Log::warning('Failed to fetch Google groups: ' . $e->getMessage());
+            \Log::error('Google OAuth: Failed to fetch groups', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return [];
         }
     }

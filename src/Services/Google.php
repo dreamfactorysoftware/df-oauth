@@ -55,19 +55,34 @@ class Google extends BaseOAuthService
     protected function getRoleByGroup(array $groups)
     {
         if (!$this->mapGroupToRole || empty($groups)) {
+            \Log::debug('Google OAuth: getRoleByGroup - early exit', [
+                'mapGroupToRole' => $this->mapGroupToRole,
+                'groups_empty' => empty($groups)
+            ]);
             return null;
         }
 
+        // Log configured mappings for debugging
+        $configuredMappings = RoleGoogle::all()->toArray();
+        \Log::info('Google OAuth: Configured group-role mappings', ['mappings' => $configuredMappings]);
+
         foreach ($groups as $group) {
             $groupEmail = Arr::get($group, 'email');
+            \Log::debug('Google OAuth: Checking group', ['group_email' => $groupEmail]);
+
             if (!empty($groupEmail)) {
                 $role = $this->findRoleByGroupEmail($groupEmail);
                 if (!empty($role)) {
+                    \Log::info('Google OAuth: Found matching role', [
+                        'group_email' => $groupEmail,
+                        'role_id' => $role->role_id
+                    ]);
                     return $role->role_id;
                 }
             }
         }
 
+        \Log::info('Google OAuth: No matching role found for any group');
         return null;
     }
 
@@ -132,20 +147,38 @@ class Google extends BaseOAuthService
         // Priority: Group mapping > App role map > Default role
         $roleToApply = null;
 
+        \Log::info('Google OAuth: Processing role assignment', [
+            'user_id' => $user->id,
+            'map_group_to_role' => $this->mapGroupToRole
+        ]);
+
         if ($this->mapGroupToRole) {
             $userRaw = $OAuthUser->getRaw();
             $groups = Arr::get($userRaw, 'groups', []);
+
+            \Log::info('Google OAuth: User groups from OAuth', [
+                'groups' => $groups,
+                'raw_keys' => array_keys($userRaw)
+            ]);
+
             $roleToApply = $this->getRoleByGroup($groups);
+
+            \Log::info('Google OAuth: Role from group mapping', ['role_id' => $roleToApply]);
         }
 
         if (empty($roleToApply)) {
             if (!empty($defaultRole = $this->getDefaultRole())) {
                 $roleToApply = $defaultRole;
+                \Log::info('Google OAuth: Using default role', ['role_id' => $roleToApply]);
             }
         }
 
         // Always refresh role assignments on login
         if (!empty($roleToApply)) {
+            \Log::info('Google OAuth: Applying role to user', [
+                'user_id' => $user->id,
+                'role_id' => $roleToApply
+            ]);
             \DB::table('user_to_app_to_role')->where('user_id', $user->id)->delete();
             User::applyDefaultUserAppRole($user, $roleToApply);
         } elseif (!empty($serviceId = $this->getServiceId())) {
