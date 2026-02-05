@@ -38,10 +38,10 @@ class OAuthConfig extends BaseServiceConfigModel
     protected $protected = ['client_secret'];
 
     /**
-     * Hide Azure AD-specific fields from the config schema.
-     * These fields were added to this shared oauth_config table for Azure AD Client Credentials flow,
-     * but should not appear in the UI for other OAuth providers (Google, Facebook, GitHub, etc.).
-     * The df-azure-ad package has its own OAuthConfig class with a separate azure_ad_config table.
+     * Hide provider-specific fields from the config schema.
+     * These fields were added to this shared oauth_config table for specific providers,
+     * but should not appear in the UI for other OAuth providers (Facebook, GitHub, etc.).
+     * Provider-specific config classes (GoogleOAuthConfig, etc.) will unhide their relevant fields.
      */
     protected $hidden = [
         'tenant_id',
@@ -49,6 +49,7 @@ class OAuthConfig extends BaseServiceConfigModel
         'scopes',
         'grant_type',
         'is_client_credentials',
+        'map_group_to_role',  // Google-specific, shown in GoogleOAuthConfig
     ];
 
     protected $casts = [
