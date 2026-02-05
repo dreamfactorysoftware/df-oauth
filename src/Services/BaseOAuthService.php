@@ -354,8 +354,9 @@ abstract class BaseOAuthService extends BaseRestService
         }
 
         return true;
-     
-     /**
+    }
+
+    /**
      * Get the appropriate redirect base URL based on environment
      */
     private function getRedirectBaseUrl()
