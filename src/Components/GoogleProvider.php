@@ -47,7 +47,7 @@ class GoogleProvider extends \Laravel\Socialite\Two\GoogleProvider
     }
 
     /**
-     * Get the user's groups from Google Cloud Identity API.
+     * Get the user's groups from Google People API (Directory).
      *
      * @param string $token
      * @param string $userEmail
@@ -58,12 +58,10 @@ class GoogleProvider extends \Laravel\Socialite\Two\GoogleProvider
         try {
             \Log::info('Google OAuth: Fetching groups for user', ['email' => $userEmail]);
 
-            // Try Cloud Identity API - searchTransitiveGroups endpoint
-            // This returns all groups the user is a member of (including nested)
-            $url = "https://cloudidentity.googleapis.com/v1/groups/-/memberships:searchTransitiveGroups?"
-                 . "query=" . rawurlencode("member_key_id=='" . $userEmail . "'");
+            // Try People API directory endpoint to get memberships
+            $url = "https://people.googleapis.com/v1/people/me?personFields=memberships";
 
-            \Log::debug('Google OAuth: Groups API URL', ['url' => $url]);
+            \Log::debug('Google OAuth: Trying People API', ['url' => $url]);
 
             $response = $this->getHttpClient()->get($url, [
                 'headers' => ['Authorization' => 'Bearer ' . $token]
@@ -72,41 +70,108 @@ class GoogleProvider extends \Laravel\Socialite\Two\GoogleProvider
             $body = $response->getBody()->getContents();
             $data = json_decode($body, true);
 
-            \Log::info('Google OAuth: Groups API response', [
+            \Log::info('Google OAuth: People API response', [
                 'status' => $response->getStatusCode(),
                 'body' => $body
             ]);
 
             $groups = [];
 
-            // Handle searchTransitiveGroups response format
+            // Check memberships in response
             if (isset($data['memberships']) && is_array($data['memberships'])) {
                 foreach ($data['memberships'] as $membership) {
-                    if (isset($membership['groupKey']['id'])) {
+                    if (isset($membership['domainMembership'])) {
+                        // This is a domain/group membership
                         $groups[] = [
-                            'id'    => $membership['group'] ?? null,
-                            'email' => $membership['groupKey']['id'],
+                            'id'    => $membership['metadata']['source']['id'] ?? null,
+                            'email' => $membership['domainMembership']['inViewerDomain'] ?? null,
                         ];
                     }
                 }
             }
 
-            \Log::info('Google OAuth: Parsed groups', ['groups' => $groups]);
+            // If People API doesn't have groups, try Cloud Identity with different format
+            if (empty($groups)) {
+                \Log::info('Google OAuth: People API had no groups, trying Cloud Identity lookup');
+                $groups = $this->getUserGroupsFromCloudIdentity($token, $userEmail);
+            }
+
+            \Log::info('Google OAuth: Final parsed groups', ['groups' => $groups]);
 
             return $groups;
         } catch (\GuzzleHttp\Exception\ClientException $e) {
             $response = $e->getResponse();
             $body = $response ? $response->getBody()->getContents() : 'No response body';
-            \Log::error('Google OAuth: Groups API client error', [
+            \Log::warning('Google OAuth: People API error, trying Cloud Identity', [
                 'status' => $response ? $response->getStatusCode() : 'unknown',
-                'error' => $e->getMessage(),
+                'response' => $body
+            ]);
+            // Fall back to Cloud Identity API
+            return $this->getUserGroupsFromCloudIdentity($token, $userEmail);
+        } catch (\Exception $e) {
+            \Log::error('Google OAuth: Failed to fetch groups', [
+                'error' => $e->getMessage()
+            ]);
+            return [];
+        }
+    }
+
+    /**
+     * Get user's groups from Cloud Identity API using checkTransitiveMembership.
+     *
+     * @param string $token
+     * @param string $userEmail
+     * @return array
+     */
+    protected function getUserGroupsFromCloudIdentity($token, $userEmail)
+    {
+        try {
+            // Try listing all groups and check membership for each
+            // First, get groups in the domain
+            $url = "https://cloudidentity.googleapis.com/v1/groups?"
+                 . http_build_query([
+                     'parent' => 'customers/my_customer',
+                     'view' => 'BASIC'
+                 ]);
+
+            \Log::debug('Google OAuth: Cloud Identity list groups URL', ['url' => $url]);
+
+            $response = $this->getHttpClient()->get($url, [
+                'headers' => ['Authorization' => 'Bearer ' . $token]
+            ]);
+
+            $body = $response->getBody()->getContents();
+            $data = json_decode($body, true);
+
+            \Log::info('Google OAuth: Cloud Identity groups list response', [
+                'status' => $response->getStatusCode(),
+                'body' => $body
+            ]);
+
+            $groups = [];
+
+            if (isset($data['groups']) && is_array($data['groups'])) {
+                foreach ($data['groups'] as $group) {
+                    $groups[] = [
+                        'id'    => $group['name'] ?? null,
+                        'email' => $group['groupKey']['id'] ?? null,
+                        'displayName' => $group['displayName'] ?? null,
+                    ];
+                }
+            }
+
+            return $groups;
+        } catch (\GuzzleHttp\Exception\ClientException $e) {
+            $response = $e->getResponse();
+            $body = $response ? $response->getBody()->getContents() : 'No response body';
+            \Log::error('Google OAuth: Cloud Identity groups list error', [
+                'status' => $response ? $response->getStatusCode() : 'unknown',
                 'response' => $body
             ]);
             return [];
         } catch (\Exception $e) {
-            \Log::error('Google OAuth: Failed to fetch groups', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+            \Log::error('Google OAuth: Cloud Identity error', [
+                'error' => $e->getMessage()
             ]);
             return [];
         }
