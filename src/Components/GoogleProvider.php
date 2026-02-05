@@ -58,8 +58,11 @@ class GoogleProvider extends \Laravel\Socialite\Two\GoogleProvider
         try {
             \Log::info('Google OAuth: Fetching groups for user', ['email' => $userEmail]);
 
-            $query = urlencode("member_key_id == '{$userEmail}' && 'cloudidentity.googleapis.com/groups.discussion_forum' in labels");
-            $url = "https://cloudidentity.googleapis.com/v1/groups/-/memberships:searchDirectGroups?query={$query}";
+            // Use searchTransitiveGroups which is more reliable and includes nested group memberships
+            // Query format: member_key_id == 'user@domain.com'
+            $query = "member_key_id == '" . $userEmail . "'";
+            $url = "https://cloudidentity.googleapis.com/v1/groups/-/memberships:searchTransitiveGroups?"
+                 . http_build_query(['query' => $query]);
 
             \Log::debug('Google OAuth: Groups API URL', ['url' => $url]);
 
@@ -79,6 +82,7 @@ class GoogleProvider extends \Laravel\Socialite\Two\GoogleProvider
 
             if (isset($data['memberships']) && is_array($data['memberships'])) {
                 foreach ($data['memberships'] as $membership) {
+                    // Extract group email from groupKey
                     if (isset($membership['groupKey']['id'])) {
                         $groups[] = [
                             'id'    => $membership['group'] ?? null,
