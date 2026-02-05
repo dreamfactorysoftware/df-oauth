@@ -4,6 +4,7 @@ namespace DreamFactory\Core\OAuth;
 
 use DreamFactory\Core\Enums\ServiceTypeGroups;
 use DreamFactory\Core\OAuth\Commands\SetupHerokuSSO;
+use DreamFactory\Core\OAuth\Models\GoogleOAuthConfig;
 use DreamFactory\Core\OAuth\Models\HerokuAddonSSOConfig;
 use DreamFactory\Core\OAuth\Models\OAuthConfig;
 // AzureAD service is provided by df-azure-ad package
@@ -84,7 +85,7 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
                     'label'             => 'Google OAuth',
                     'description'       => 'OAuth service for supporting Google authentication and API access.',
                     'group'             => ServiceTypeGroups::OAUTH,
-                    'config_handler'    => OAuthConfig::class,
+                    'config_handler'    => GoogleOAuthConfig::class,
                     'factory'           => function ($config) {
                         return new Google($config);
                     },
