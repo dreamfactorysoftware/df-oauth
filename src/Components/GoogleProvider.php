@@ -15,6 +15,11 @@ class GoogleProvider extends \Laravel\Socialite\Two\GoogleProvider
     use DfOAuthTwoProvider;
 
     /**
+     * @var bool Whether to fetch user groups
+     */
+    protected $fetchGroups = false;
+
+    /**
      * @param Request $clientId
      * @param string  $clientSecret
      * @param string  $redirectUrl
@@ -27,6 +32,103 @@ class GoogleProvider extends \Laravel\Socialite\Two\GoogleProvider
     }
 
     /**
+     * Enable group fetching and add the required scopes.
+     *
+     * @return $this
+     */
+    public function enableGroupFetching()
+    {
+        $this->fetchGroups = true;
+        $this->scopes = array_unique(array_merge($this->scopes, [
+            'https://www.googleapis.com/auth/admin.directory.group.readonly',
+        ]));
+
+        return $this;
+    }
+
+    /**
+     * Get the user's groups from Google Admin Directory API.
+     *
+     * Requires domain-wide delegation or admin privileges.
+     *
+     * @param string $token
+     * @param string $userEmail
+     * @return array
+     */
+    protected function getUserGroups($token, $userEmail)
+    {
+        try {
+            $url = "https://admin.googleapis.com/admin/directory/v1/groups?"
+                 . http_build_query(['userKey' => $userEmail]);
+
+            $response = $this->getHttpClient()->get($url, [
+                'headers' => ['Authorization' => 'Bearer ' . $token]
+            ]);
+
+            $data = json_decode($response->getBody()->getContents(), true);
+            $groups = [];
+
+            if (isset($data['groups']) && is_array($data['groups'])) {
+                foreach ($data['groups'] as $group) {
+                    $groups[] = [
+                        'id'    => $group['id'] ?? null,
+                        'email' => $group['email'] ?? null,
+                        'name'  => $group['name'] ?? null,
+                    ];
+                }
+            }
+
+            return $groups;
+
+        } catch (\GuzzleHttp\Exception\ClientException $e) {
+            $response = $e->getResponse();
+            $body = $response ? $response->getBody()->getContents() : 'No response body';
+            \Log::warning('Google OAuth: Failed to fetch groups from Admin Directory API', [
+                'status' => $response ? $response->getStatusCode() : 'unknown',
+                'error' => $body
+            ]);
+            return [];
+        } catch (\Exception $e) {
+            \Log::warning('Google OAuth: Failed to fetch groups', ['error' => $e->getMessage()]);
+            return [];
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getUserByToken($token)
+    {
+        $response = $this->getHttpClient()->get(
+            'https://www.googleapis.com/oauth2/v3/userinfo',
+            $this->getRequestOptions($token)
+        );
+
+        $user = json_decode($response->getBody()->getContents(), true);
+
+        if ($this->fetchGroups && !empty($user['email'])) {
+            $user['groups'] = $this->getUserGroups($token, $user['email']);
+        }
+
+        return $user;
+    }
+
+    /**
+     * Get the request options for the HTTP client.
+     *
+     * @param string $token
+     * @return array
+     */
+    protected function getRequestOptions($token)
+    {
+        return [
+            'headers' => [
+                'Authorization' => 'Bearer ' . $token,
+            ],
+        ];
+    }
+
+    /**
      * {@inheritdoc}
      */
     protected function mapUserToObject(array $user)
@@ -34,7 +136,7 @@ class GoogleProvider extends \Laravel\Socialite\Two\GoogleProvider
         $avatarUrl = Arr::get($user, 'picture');
 
         return (new User)->setRaw($user)->map([
-            'id'       => Arr::get($user, 'id'),
+            'id'       => Arr::get($user, 'sub', Arr::get($user, 'id')),
             'nickname' => Arr::get($user, 'nickname'),
             'name' => Arr::get($user, 'name'),
             'email' => Arr::get($user, 'email'),
