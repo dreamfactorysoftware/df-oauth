@@ -40,16 +40,17 @@ class GoogleProvider extends \Laravel\Socialite\Two\GoogleProvider
     {
         $this->fetchGroups = true;
         $this->scopes = array_unique(array_merge($this->scopes, [
-            'https://www.googleapis.com/auth/admin.directory.group.readonly',
+            'https://www.googleapis.com/auth/cloud-identity.groups.readonly',
         ]));
 
         return $this;
     }
 
     /**
-     * Get the user's groups from Google Admin Directory API.
+     * Get the user's groups from Google Cloud Identity API.
      *
-     * Requires domain-wide delegation or admin privileges.
+     * Uses the searchDirectGroups endpoint which allows any Google Workspace
+     * user to query their own group memberships via a standard OAuth 2.0 token.
      *
      * @param string $token
      * @param string $userEmail
@@ -58,32 +59,48 @@ class GoogleProvider extends \Laravel\Socialite\Two\GoogleProvider
     protected function getUserGroups($token, $userEmail)
     {
         try {
-            $url = "https://admin.googleapis.com/admin/directory/v1/groups?"
-                 . http_build_query(['userKey' => $userEmail]);
-
-            $response = $this->getHttpClient()->get($url, [
-                'headers' => ['Authorization' => 'Bearer ' . $token]
-            ]);
-
-            $data = json_decode($response->getBody()->getContents(), true);
             $groups = [];
+            $pageToken = null;
 
-            if (isset($data['groups']) && is_array($data['groups'])) {
-                foreach ($data['groups'] as $group) {
-                    $groups[] = [
-                        'id'    => $group['id'] ?? null,
-                        'email' => $group['email'] ?? null,
-                        'name'  => $group['name'] ?? null,
-                    ];
+            do {
+                $query = [
+                    'query' => "member_key_id == '" . $userEmail . "'",
+                    'page_size' => 1000,
+                ];
+
+                if ($pageToken) {
+                    $query['page_token'] = $pageToken;
                 }
-            }
+
+                $response = $this->getHttpClient()->get(
+                    'https://cloudidentity.googleapis.com/v1/groups/-/memberships:searchDirectGroups',
+                    [
+                        'headers' => ['Authorization' => 'Bearer ' . $token],
+                        'query' => $query,
+                    ]
+                );
+
+                $data = json_decode($response->getBody()->getContents(), true);
+
+                if (isset($data['memberships']) && is_array($data['memberships'])) {
+                    foreach ($data['memberships'] as $membership) {
+                        $groups[] = [
+                            'id'    => $membership['group'] ?? null,
+                            'email' => $membership['groupKey']['id'] ?? null,
+                            'name'  => $membership['displayName'] ?? null,
+                        ];
+                    }
+                }
+
+                $pageToken = $data['nextPageToken'] ?? null;
+            } while ($pageToken);
 
             return $groups;
 
         } catch (\GuzzleHttp\Exception\ClientException $e) {
             $response = $e->getResponse();
             $body = $response ? $response->getBody()->getContents() : 'No response body';
-            \Log::warning('Google OAuth: Failed to fetch groups from Admin Directory API', [
+            \Log::warning('Google OAuth: Failed to fetch groups from Cloud Identity API', [
                 'status' => $response ? $response->getStatusCode() : 'unknown',
                 'error' => $body
             ]);
