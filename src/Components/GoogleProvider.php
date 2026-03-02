@@ -82,7 +82,7 @@ class GoogleProvider extends \Laravel\Socialite\Two\GoogleProvider
 
                 $data = json_decode($response->getBody()->getContents(), true);
 
-                \Log::info('Google OAuth: Cloud Identity API response', [
+                \Log::debug('Google OAuth: Cloud Identity API response', [
                     'user_email' => $userEmail,
                     'membership_count' => isset($data['memberships']) ? count($data['memberships']) : 0,
                     'raw_keys' => array_keys($data ?? []),
@@ -101,7 +101,7 @@ class GoogleProvider extends \Laravel\Socialite\Two\GoogleProvider
                 $pageToken = $data['nextPageToken'] ?? null;
             } while ($pageToken);
 
-            \Log::info('Google OAuth: Groups fetched successfully', [
+            \Log::debug('Google OAuth: Groups fetched successfully', [
                 'user_email' => $userEmail,
                 'group_count' => count($groups),
                 'group_emails' => array_column($groups, 'email'),
