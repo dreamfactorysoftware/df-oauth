@@ -105,7 +105,7 @@ class Google extends BaseOAuthService
      */
     public function createShadowOAuthUser(OAuthUserContract $OAuthUser)
     {
-        $fullName = $OAuthUser->getName() || $OAuthUser->getNickname();
+        $fullName = $OAuthUser->getName() ?: $OAuthUser->getNickname();
         @list($firstName, $lastName) = explode(' ', $fullName);
 
         $email = $OAuthUser->getEmail();

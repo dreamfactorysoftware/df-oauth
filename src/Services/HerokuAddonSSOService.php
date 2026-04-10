@@ -117,7 +117,7 @@ class HerokuAddonSSOService extends BaseRestService
                 $secret = $this->getConfig('secret');
             }
         }
-        if (sha1("{$resourceId}:{$secret}:{$timestamp}") !== $token) {
+        if (!hash_equals(sha1("{$resourceId}:{$secret}:{$timestamp}"), $token)) {
             throw new ForbiddenException('Token invalid. Please provide valid token');
         }
     }
