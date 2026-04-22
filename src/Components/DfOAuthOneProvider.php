@@ -33,7 +33,11 @@ trait DfOAuthOneProvider
             \Cache::put('oauth.temp', $temp, 180);
         } else {
             $temp = $this->server->getTemporaryCredentials();
-            \Cache::put('oauth_temp', serialize($temp), 180);
+            // Store as JSON to avoid insecure unserialize() on cache retrieval
+            \Cache::put('oauth_temp', json_encode([
+                'identifier' => $temp->getIdentifier(),
+                'secret' => $temp->getSecret(),
+            ]), 180);
         }
 
         return new RedirectResponse($this->server->getAuthorizationUrl($temp));
@@ -49,10 +53,8 @@ trait DfOAuthOneProvider
         if (!$this->isStateless()) {
             return \Cache::get('oauth.temp');
         } else {
-            /** @var TemporaryCredentials $temp */
-            $temp = unserialize(\Cache::get('oauth_temp'));
-
-            return $temp->getIdentifier();
+            $data = json_decode(\Cache::get('oauth_temp'), true);
+            return $data['identifier'] ?? null;
         }
     }
 
@@ -68,7 +70,10 @@ trait DfOAuthOneProvider
                 $temp, $this->request->get('oauth_token'), $this->request->get('oauth_verifier')
             );
         } else {
-            $temp = unserialize(\Cache::pull('oauth_temp'));
+            $data = json_decode(\Cache::pull('oauth_temp'), true);
+            $temp = new TemporaryCredentials();
+            $temp->setIdentifier($data['identifier'] ?? '');
+            $temp->setSecret($data['secret'] ?? '');
 
             return $this->server->getTokenCredentials(
                 $temp, $this->request->get('oauth_token'), $this->request->get('oauth_verifier')
