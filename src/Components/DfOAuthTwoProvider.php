@@ -63,10 +63,15 @@ trait DfOAuthTwoProvider
         if ($this->isStateless()) {
             return false;
         }
-        $urlState = $this->request->input('state');
-        $cacheState = \Cache::pull($urlState);
+        $urlState = (string) $this->request->input('state');
+        $cacheState = (string) \Cache::pull($urlState);
 
-        return !(strlen($cacheState) > 0 && $urlState === $cacheState);
+        // Use hash_equals for constant-time comparison. The OAuth state
+        // token is a CSRF-prevention nonce; even though both sides are
+        // CSPRNG-generated, comparing with === leaks length + position
+        // information via timing, and consistency with other token
+        // comparisons in the codebase matters.
+        return !(strlen($cacheState) > 0 && hash_equals($cacheState, $urlState));
     }
 
     /**

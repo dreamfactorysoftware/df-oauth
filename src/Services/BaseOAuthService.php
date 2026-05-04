@@ -325,12 +325,24 @@ abstract class BaseOAuthService extends BaseRestService
      */
     protected function isValidRedirectUrl($url)
     {
-        // Must be a valid URL
-        if (!filter_var($url, FILTER_VALIDATE_URL)) {
+        // filter_var(URL) accepts URLs with credentials in the userinfo
+        // section (e.g. http://127.0.0.1:1234@attacker.com) which makes
+        // the host appear to be 127.0.0.1 to a casual reader but the
+        // request actually goes to attacker.com. We do our own scheme +
+        // host check via parse_url and ignore filter_var for everything
+        // except basic structural sanity.
+        if (!is_string($url) || $url === '') {
             return false;
         }
-
         $parsed = parse_url($url);
+        if ($parsed === false || empty($parsed['scheme']) || empty($parsed['host'])) {
+            return false;
+        }
+        // Reject any URL that includes userinfo credentials — these are
+        // a known phishing technique to make malicious URLs look benign.
+        if (!empty($parsed['user']) || !empty($parsed['pass'])) {
+            return false;
+        }
 
         // Must be HTTPS in production (allow HTTP in debug mode for local development)
         if (!config('app.debug') && ($parsed['scheme'] ?? '') !== 'https') {
@@ -345,16 +357,48 @@ abstract class BaseOAuthService extends BaseRestService
             $whitelist = $appHost ? [$appHost] : [];
         }
 
-        $host = $parsed['host'] ?? '';
+        $host = strtolower($parsed['host'] ?? '');
         $allowed = false;
         foreach ($whitelist as $pattern) {
-            if (fnmatch($pattern, $host)) {
+            if (self::hostMatchesPattern($host, (string) $pattern)) {
                 $allowed = true;
                 break;
             }
         }
 
         return $allowed;
+    }
+
+    /**
+     * Strict host match. Replaces fnmatch, which is glob-based and
+     * accepts wildcards in unsafe positions (e.g., admin configures
+     * `example.com*` which matches `example.com.attacker.com`).
+     *
+     * Allowed pattern shapes:
+     *   - exact host (case-insensitive)         e.g. `example.com`
+     *   - leading-wildcard subdomain match      e.g. `*.example.com`
+     *
+     * Anything more permissive must be expressed as multiple entries.
+     */
+    public static function hostMatchesPattern(string $host, string $pattern): bool
+    {
+        $host = strtolower($host);
+        $pattern = strtolower($pattern);
+
+        if ($pattern === '') {
+            return false;
+        }
+        if ($host === $pattern) {
+            return true;
+        }
+        if (str_starts_with($pattern, '*.')) {
+            $suffix = substr($pattern, 1); // ".example.com"
+            // Must end with the suffix and have at least one extra label.
+            if (str_ends_with($host, $suffix) && strlen($host) > strlen($suffix)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
