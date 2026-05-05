@@ -28,11 +28,20 @@
   "minimum-stability": "dev",
   "prefer-stable":     true,
   "require":     {
-    "dreamfactory/df-core":              "~1.0",
-    "laravel/socialite":                 "~2.0|~4.2|^5.0.0",
-    "socialiteproviders/microsoft-live": "^2.0|^3.0|^4.1.0",
-    "socialiteproviders/twitter":        "^2.0|^3.0|^4.1.0",
-    "ext-json": "*"
+    "php":                               "^8.3",
+    "ext-json":                          "*",
+    "laravel/helpers":                   "^1.8",
+    "dreamfactory/df-core":              "~1.0.4",
+    "laravel/socialite":                 "^5.20",
+    "socialiteproviders/microsoft-live": "^4.1",
+    "socialiteproviders/twitter":        "^4.1"
+  },
+  "require-dev": {
+    "laravel/framework":     "^13.7",
+    "mockery/mockery":       "^1.6",
+    "nunomaduro/collision":  "^8.6",
+    "phpunit/phpunit":       "^11.5.3",
+    "orchestra/testbench":   "^11.0"
   },
   "autoload":    {
     "psr-4": {
