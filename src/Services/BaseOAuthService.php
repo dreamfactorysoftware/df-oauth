@@ -256,7 +256,7 @@ abstract class BaseOAuthService extends BaseRestService
      */
     public function createShadowOAuthUser(OAuthUserContract $OAuthUser)
     {
-        $fullName = $OAuthUser->getName() || $OAuthUser->getNickname();
+        $fullName = $OAuthUser->getName() ?: $OAuthUser->getNickname();
         @list($firstName, $lastName) = explode(' ', $fullName);
 
         $email = $OAuthUser->getEmail();
@@ -337,23 +337,24 @@ abstract class BaseOAuthService extends BaseRestService
             return false;
         }
 
-        // Check against whitelist if configured
+        // Check against whitelist — default to own host if no whitelist configured
         $whitelist = config('df.oauth.allowed_redirect_domains', []);
-        if (!empty($whitelist)) {
-            $host = $parsed['host'] ?? '';
-            $allowed = false;
-            foreach ($whitelist as $pattern) {
-                if (fnmatch($pattern, $host)) {
-                    $allowed = true;
-                    break;
-                }
-            }
-            if (!$allowed) {
-                return false;
+        if (empty($whitelist)) {
+            // No whitelist configured: only allow redirects to the same host
+            $appHost = parse_url(config('app.url', ''), PHP_URL_HOST);
+            $whitelist = $appHost ? [$appHost] : [];
+        }
+
+        $host = $parsed['host'] ?? '';
+        $allowed = false;
+        foreach ($whitelist as $pattern) {
+            if (fnmatch($pattern, $host)) {
+                $allowed = true;
+                break;
             }
         }
 
-        return true;
+        return $allowed;
     }
 
     /**

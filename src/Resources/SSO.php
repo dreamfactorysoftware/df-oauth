@@ -76,12 +76,9 @@ class SSO extends BaseRestResource
         } catch (\Exception $e) {
             Log::error('OAuth callback failed:', ['error' => $e->getMessage()]);
 
-            // For OAuth callbacks, we need to redirect to an error page instead of returning JSON
-            $errorMessage = urlencode($e->getMessage());
-
-            // Check if we're in development mode (detect by checking if port 4200 is accessible)
             $baseUrl = $this->getRedirectBaseUrl();
-            $redirectUrl = $baseUrl . "?error=" . $errorMessage;
+            // Use generic error message in redirect to avoid leaking internal details
+            $redirectUrl = $baseUrl . "?error=" . urlencode('Authentication failed. Please try again.');
             Log::info('OAuth error redirect URL:', ['url' => $redirectUrl]);
 
             return $this->respond()
