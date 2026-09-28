@@ -31,7 +31,7 @@
     "php":                               "^8.3",
     "ext-json":                          "*",
     "laravel/helpers":                   "^1.8",
-    "dreamfactory/df-core":              "~1.0.4",
+    "dreamfactory/df-core":              "~1.0.18",
     "laravel/socialite":                 "^5.20",
     "socialiteproviders/microsoft-live": "^4.1",
     "socialiteproviders/twitter":        "^4.1"
