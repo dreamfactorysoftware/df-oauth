@@ -1,8 +1,12 @@
-®# Change Log
+# Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [1.0.4] - 2026-11-18
+- Stability and reliability improvements.
+
 ## [0.14.0] - 2017-12-28
 ### Added
 - Added package discovery

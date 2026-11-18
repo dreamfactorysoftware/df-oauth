@@ -104,8 +104,8 @@ class SetupHerokuSSO extends Command
     protected function getServiceConfig() {
         $config = $this->option('service-config');
         if (filter_var($config, FILTER_VALIDATE_URL)) {
-            // need to download file
-            $config = FileUtilities::importUrlFileToTemp($config);
+            // need to download file; the URL comes from the operator, so any host it names is accepted
+            $config = FileUtilities::importUrlFileToTemp($config, '', true);
         }
 
         if (is_file($config)) {
